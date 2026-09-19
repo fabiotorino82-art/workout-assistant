@@ -237,12 +237,61 @@ select:focus{outline:none; border-color:var(--accent);}
 
   <div class="hero-mini">
     <h2>Workout <span>Assistant</span></h2>
-    <p>Seleziona settimana e giorno · poi parte la sessione guidata con voce</p>
+    <p>Seleziona settimana e giorno · poi parte la sessione guidata</p>
+  </div>
+
+  <!-- Piano descrizione -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">Piano <span style="color:var(--accent)">6 Mesi</span> — Upper Body &amp; Definizione</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;">
+      Piano progettuale per costruire un fisico a <strong style="color:var(--text)">V shape</strong> con massa muscolare reale, addome visibile e gambe scolpite. Studiato per chi ha tempo di allenarsi ogni giorno e vuole risultati seri senza rischiare la schiena.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:var(--surface2);border-radius:10px;padding:12px;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎯 Obiettivi</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+          Petto pieno e definito<br>
+          Spalle larghe (deltoide)<br>
+          Trapezio gonfio<br>
+          Bicipiti e tricipiti<br>
+          Six pack visibile<br>
+          Gambe scolpite<br>
+          Pancia piatta
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:12px;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📅 Struttura</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+          6 giorni / settimana<br>
+          24 settimane totali<br>
+          Lun · Petto + Tric<br>
+          Mar · Spalle + Trap<br>
+          Mer · Gambe + Core<br>
+          Gio · Schiena + Bic<br>
+          Ven · Volume Upper<br>
+          Sab · HIIT + Addome
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="background:color-mix(in srgb,var(--accent) 12%,var(--surface2));border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:12px;">
+        <span style="color:var(--accent);font-weight:700;">Fase 1</span> <span style="color:var(--text2);">Sett. 1–8 · Riattivazione</span>
+      </div>
+      <div style="background:color-mix(in srgb,var(--warn) 12%,var(--surface2));border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:12px;">
+        <span style="color:var(--warn);font-weight:700;">Fase 2</span> <span style="color:var(--text2);">Sett. 9–16 · Ipertrofia</span>
+      </div>
+      <div style="background:color-mix(in srgb,var(--good) 12%,var(--surface2));border:1px solid var(--good);border-radius:8px;padding:8px 12px;font-size:12px;">
+        <span style="color:var(--good);font-weight:700;">Fase 3</span> <span style="color:var(--text2);">Sett. 17–24 · Definizione</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px;">
+      ⚠️ Tutti gli esercizi sono adattati per ernia L5-S1 e artrosi anca — nessun impatto, nessun squat profondo, nessun sit-up classico.
+    </div>
   </div>
 
   <!-- Week selector -->
   <div class="week-sel">
-    <label>Settimana</label>
+    <label>Settimana <span id="month-label" style="color:var(--accent2);font-size:11px;"></span></label>
     <button class="wk-btn" onclick="changeWeek(-1)">−</button>
     <div class="week-num" id="wk-display">1</div>
     <button class="wk-btn" onclick="changeWeek(1)">+</button>
@@ -319,206 +368,328 @@ select:focus{outline:none; border-color:var(--accent);}
 const DAYS_NAMES = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 
 const WEEKLY_STRUCTURE = [
-  { label:'Spalle + Schiena Alta', type:'spalle', emoji:'🔺' },
-  { label:'Petto + Tricipiti',     type:'petto',   emoji:'💪' },
-  { label:'Cyclette + Core',       type:'cardio',  emoji:'🚴' },
-  { label:'Spalle + Bicipiti',     type:'spalle2', emoji:'🔺' },
-  { label:'Schiena + Glutei',      type:'schiena', emoji:'🏋️' },
-  { label:'Cardio + Full Body',    type:'fullbody',emoji:'🔥' },
-  { label:'Riposo Attivo',         type:'rest',    emoji:'🧘' },
+  { label:'Petto + Tricipiti',         type:'petto',   emoji:'💪' },
+  { label:'Spalle + Trapezio',         type:'spalle',  emoji:'🔺' },
+  { label:'Gambe + Glutei + Core',     type:'gambe',   emoji:'🦵' },
+  { label:'Schiena + Bicipiti',        type:'schiena', emoji:'🏋️' },
+  { label:'Petto + Spalle Volume',     type:'petto2',  emoji:'🔥' },
+  { label:'HIIT + Cardio + Addome',    type:'cardio',  emoji:'🚴' },
+  { label:'Riposo Attivo',             type:'rest',    emoji:'🧘' },
 ];
 
 // YouTube search URLs per esercizio (aprono ricerca YT)
 const YT_SEARCH = name => `https://www.youtube.com/results?search_query=${encodeURIComponent(name+' esercizio tutorial')}`;
 
 function getExercises(type, week) {
-  const phase = week <= 2 ? 1 : week <= 4 ? 2 : 3;
+  // phase 1: settimane 1-8  (Riattivazione avanzata)
+  // phase 2: settimane 9-16 (Ipertrofia + HIIT)
+  // phase 3: settimane 17-24 (Definizione atletica)
+  const phase = week <= 8 ? 1 : week <= 16 ? 2 : 3;
 
-  const REST_BETWEEN_SETS = 60; // seconds
+  const CARDIO_SEP  = { name:'── CARDIO FINISHER ──', sets:0, reps:'', detail:'Resistenza cardiovascolare', note:'❤️ Cuore e polmoni', rest:0 };
+  const CORE_SEP    = { name:'── CORE FINISHER ──',   sets:0, reps:'', detail:'10 min · Six pack focus',   note:'🔥 Addome scolpito',  rest:0 };
 
   const plans = {
-    spalle: {
-      warmup: [
-        { name:'Rotazioni spalle', sets:2, reps:'15', detail:'Avanti e indietro, lente', note:'Solo mobilità', rest:30 },
-        { name:'Pendolo braccia',  sets:2, reps:'20', detail:'Dondola liberamente',      note:'',             rest:30 },
-      ],
-      main: phase===1 ? [
-        { name:'Alzate laterali manubri', sets:3, reps:'12', detail:'2.5kg→5kg · Gomiti flessi', note:'V shape — deltoide laterale', rest:60 },
-        { name:'Press sopra testa seduto',sets:3, reps:'10', detail:'5kg · Schiena neutra',      note:'⚠️ Sempre seduto',            rest:60 },
-        { name:'Alzate frontali',         sets:3, reps:'10', detail:'2.5kg · Fino a 90°',        note:'',                            rest:60 },
-        { name:'Rematore TRX',            sets:3, reps:'12', detail:'Corpo 45° · Gomiti indietro',note:'Schiena larga = V shape',    rest:60 },
-        { name:'Face pull elastico',      sets:3, reps:'15', detail:'Altezza occhi · Gomiti alti',note:'Postura + spalle posteriori',rest:60 },
-      ] : phase===2 ? [
-        { name:'Alzate laterali manubri', sets:4, reps:'12', detail:'5kg · Pausa 1" in cima',    note:'', rest:60 },
-        { name:'Press sopra testa seduto',sets:4, reps:'10', detail:'7.5kg · Discesa 3"',         note:'⚠️ Seduto sempre', rest:60 },
-        { name:'Alzate frontali alternate',sets:3,reps:'10/lato',detail:'5kg',                   note:'', rest:60 },
-        { name:'Rematore TRX avanzato',   sets:4, reps:'12', detail:'Più inclinato',              note:'', rest:60 },
-        { name:'Face pull + rotazione',   sets:4, reps:'15', detail:'Ruota polsi in fuori',       note:'', rest:60 },
-        { name:'Shrug manubri',           sets:3, reps:'15', detail:'7.5kg · Solo verticale',     note:'Trapezi alti', rest:60 },
-      ] : [
-        { name:'Alzate lat. drop set',    sets:3, reps:'12+8',detail:'7.5kg→5kg senza pausa',    note:'Brucia i deltoidi', rest:60 },
-        { name:'Press Arnold seduto',     sets:4, reps:'10', detail:'5kg · Pronazione salita',    note:'⚠️ Seduto', rest:60 },
-        { name:'Alzate front+lat superset',sets:3,reps:'10+10',detail:'5kg ciascuno',            note:'', rest:60 },
-        { name:'Rematore TRX monobraccio',sets:3, reps:'10/lato',detail:'',                      note:'', rest:60 },
-        { name:'Face pull alta freq.',    sets:4, reps:'20', detail:'Elastico leggero veloce',    note:'', rest:60 },
-        { name:'Shrug con pausa',         sets:3, reps:'15', detail:'7.5kg · 2" in cima',         note:'', rest:60 },
-      ],
-      cooldown: [
-        { name:'Stretching spalla cross-body', sets:1, reps:'30" / lato', detail:'', note:'', rest:10 },
-        { name:'Cat-cow lento',                sets:2, reps:'10',          detail:'Mobilità colonna', note:'✅ Ottimo per L5-S1', rest:30 },
-      ]
-    },
 
+    // ─── LUNEDÌ: Petto + Tricipiti ───────────────────────────────────────────
     petto: {
       warmup: [
-        { name:'Rotazioni polsi e gomiti', sets:2, reps:'15', detail:'', note:'', rest:20 },
-        { name:'Aperture elastico al petto',sets:2,reps:'15',detail:'Tira lentamente',note:'',rest:20},
+        { name:'Rotazioni polsi e gomiti',       sets:2, reps:'15',        detail:'Cerchi lenti in entrambi i sensi — attiva i gomiti',       note:'',                                rest:20 },
+        { name:'Aperture elastico al petto',     sets:2, reps:'15',        detail:'Tira lentamente — mobilità spalla anteriore',              note:'✅ Safe per L5-S1',               rest:20 },
+        { name:'Cat-cow lento',                  sets:2, reps:'10',        detail:'Mobilità colonna — inspira su, espira giù — 3" per rep',   note:'✅ Ottimo per L5-S1',             rest:20 },
       ],
-      main: phase===1 ? [
-        { name:'Push-up rialzato (mani su sedia)',sets:3,reps:'10',detail:'Mani alte = meno stress schiena', note:'⚠️ Safe per L5-S1', rest:60},
-        { name:'Chest press TRX',               sets:3,reps:'10',detail:'Corpo inclinato · Lento',           note:'',                  rest:60},
-        { name:'Croci con manubri',              sets:3,reps:'12',detail:'2.5kg · Gomiti flessi',             note:'Sdraiato schiena neutra',rest:60},
-        { name:'Tricipiti push-down elastico',   sets:3,reps:'15',detail:'Gomiti fermi al fianco',            note:'',                  rest:60},
-        { name:'Dip a sedie (parziale)',          sets:3,reps:'10',detail:'Piedi a terra, scendi 45°',         note:'⚠️ Non scendere troppo',rest:60},
-      ] : phase===2 ? [
-        { name:'Push-up standard',             sets:4,reps:'12',detail:'Core attivo · Corpo rigido',         note:'⚠️ Schiena: torna al rialzato se fa male',rest:60},
-        { name:'Chest press TRX con pausa',    sets:4,reps:'10',detail:'Pausa 2" in basso',                  note:'',rest:60},
-        { name:'Croci + pullover superset',    sets:4,reps:'10+8',detail:'5kg',                              note:'',rest:60},
-        { name:'Tricipiti overhead seduto',    sets:3,reps:'12',detail:'5kg · Gomiti vicini orecchie',       note:'⚠️ Seduto',rest:60},
-        { name:'Diamond push-up rialzato',     sets:3,reps:'10',detail:'Mani a diamante su sedia',           note:'',rest:60},
+      main: phase === 1 ? [
+        { name:'Push-up standard',               sets:4, reps:'15',        detail:'Core attivo — corpo rigido — discesa 3" — schiena neutra', note:'⚠️ Se senti lombare, vai su sedia', rest:60 },
+        { name:'Push-up larghi',                 sets:3, reps:'12',        detail:'Mani oltre spalle — petto esterno — discesa lenta',        note:'',                                rest:60 },
+        { name:'Chest press TRX',               sets:4, reps:'12',        detail:'Corpo inclinato 30-45° — discesa lenta 3" — petto pieno',  note:'✅ Nessun carico spinale',        rest:60 },
+        { name:'Croci manubri 7.5kg',            sets:3, reps:'12',        detail:'Sdraiato — gomiti flessi 15° — arco ampio — schiena neutra',note:'⚠️ Non arcuare la lombare',    rest:60 },
+        { name:'Tricipiti push-down elastico',   sets:4, reps:'15',        detail:'Gomiti fermi al fianco — estendi completamente — pausa 1"', note:'✅ Safe per le articolazioni',   rest:45 },
+        { name:'Dip su sedia',                   sets:3, reps:'12',        detail:'Piedi a terra — scendi 45° — schiena dritta vicino alla sedia',note:'⚠️ Non oltre 45° di flessione', rest:60 },
+      ] : phase === 2 ? [
+        { name:'Push-up esplosivi',              sets:4, reps:'10',        detail:'Stacca le mani da terra — massima esplosione — atterraggio morbido',note:'⚠️ Controlla il core — niente balzi', rest:60 },
+        { name:'Push-up larghi superset stretti',sets:4, reps:'12+8',      detail:'12 larghi poi 8 stretti senza pausa — petto completo',     note:'Superset: nessun riposo tra i due', rest:30 },
+        { name:'Chest press TRX pausa 2"',      sets:4, reps:'10',        detail:'Pausa 2" in posizione bassa — massima tensione sul petto',  note:'✅ Nessun carico spinale',        rest:75 },
+        { name:'Croci+pullover superset 7.5kg', sets:4, reps:'10+10',     detail:'Croci 7.5kg poi pullover 7.5kg senza pausa — grande dorsale',note:'Superset: 30s tra le serie',    rest:30 },
+        { name:'Skull crusher seduto',           sets:4, reps:'12',        detail:'5kg — gomiti vicini alle orecchie — discesa controllata 3"', note:'⚠️ Seduto, schiena al muro se serve', rest:60 },
+        { name:'Dip avanzato',                   sets:4, reps:'12',        detail:'Piedi su sedia rialzata — busto verticale — controllo totale',note:'⚠️ Non oltre 45° — anca e lombare safe', rest:60 },
       ] : [
-        { name:'Push-up deficit',              sets:4,reps:'12',detail:'Mani su libri · Più range',          note:'',rest:60},
-        { name:'Chest press TRX monobraccio',  sets:3,reps:'8/lato',detail:'',                               note:'',rest:60},
-        { name:'Croci + press superset',       sets:4,reps:'10+10',detail:'5kg croci, 7.5kg press',          note:'',rest:60},
-        { name:'Skull crusher seduto',         sets:3,reps:'12',detail:'5kg · Gomiti fermi',                 note:'',rest:60},
-        { name:'Push-up pike',                 sets:3,reps:'10',detail:'Mani più avanti del normale',        note:'',rest:60},
+        { name:'Archer push-up',                 sets:4, reps:'8/lato',    detail:'Un braccio teso laterale — lavoro unilaterale — alternare lato', note:'⚠️ Core antirotazione — schiena neutra', rest:75 },
+        { name:'Push-up deficit',                sets:4, reps:'12',        detail:'Mani su 2 libri spessi — range aumentato — stiramento massimo', note:'⚠️ Schiena neutra — non cedere la lombare', rest:60 },
+        { name:'Chest press TRX monobraccio',   sets:3, reps:'8/lato',    detail:'Mano singola nel TRX — core antirotazione totale',         note:'⚠️ Solo se hai controllo sufficiente', rest:75 },
+        { name:'Drop set croci 7.5kg→5kg',      sets:4, reps:'10+8',      detail:'7.5kg×10 poi 5kg×8 senza pausa — brucia ogni fibra',       note:'Nessun riposo tra i due pesi',    rest:90 },
+        { name:'Tricipiti superset push-down+overhead',sets:4,reps:'12+10',detail:'Elastico push-down poi 5kg overhead seduto senza pausa',   note:'Superset tricipiti completo',     rest:30 },
+        { name:'Dip con pausa',                  sets:4, reps:'10',        detail:'Pausa 2" in basso — controllo totale — risalita esplosiva', note:'⚠️ Non oltre 45° — anca safe',   rest:75 },
       ],
       cooldown: [
-        { name:'Stretching petto a muro', sets:1,reps:'30"/lato',detail:'Braccia a 90°',note:'',rest:10},
-        { name:'Respirazione diaframmatica',sets:2,reps:'10',detail:'Gonfia la pancia',note:'✅ Ottimo per L5-S1',rest:20},
-      ]
+        { name:'Stretching petto a muro',        sets:1, reps:'30"/lato',  detail:'Braccio a 90° sul muro — gira piano il busto',             note:'',                                rest:10 },
+        { name:'Respirazione diaframmatica',     sets:2, reps:'10',        detail:'Gonfia la pancia — non il petto — inspira 4" espira 6"',   note:'✅ Ottimo per L5-S1',             rest:20 },
+        CARDIO_SEP,
+        ...(phase === 1 ? [
+          { name:'Cyclette ritmo costante',      sets:1, reps:'8 min',     detail:'Resistenza media costante — sellino alto — schiena dritta', note:'❤️ Base cardio aerobica',        rest:0  },
+        ] : phase === 2 ? [
+          { name:'Cyclette HIIT',                sets:1, reps:'10 min',    detail:'30" sprint / 30" recupero × 10 round — sellino alto',      note:'❤️ Soglia anaerobica',            rest:0  },
+        ] : [
+          { name:'Cyclette HIIT intenso',        sets:1, reps:'12 min',    detail:'20" sprint / 40" recupero × 12 round — massima potenza',   note:'❤️ Alta intensità — cuore forte', rest:0  },
+        ]),
+        CORE_SEP,
+        ...(phase === 1 ? [
+          { name:'Plank su gomiti',              sets:3, reps:'40"',       detail:'Schiena piatta — respira — non cedere i fianchi',          note:'✅ Safe L5-S1',                   rest:30 },
+          { name:'Hollow hold',                  sets:3, reps:'25"',       detail:'Schiena incollata a terra — gambe a 45°',                  note:'⚠️ Alza le gambe se senti L5-S1', rest:30 },
+        ] : phase === 2 ? [
+          { name:'Plank su gomiti',              sets:3, reps:'55"',       detail:'Schiena piatta — respira — non cedere i fianchi',          note:'✅ Safe L5-S1',                   rest:20 },
+          { name:'Hollow hold',                  sets:3, reps:'35"',       detail:'Gambe basse se hai controllo — schiena a terra',           note:'',                                rest:20 },
+        ] : [
+          { name:'Plank shoulder tap',           sets:3, reps:'20 tap',    detail:'Non ruotare il bacino — lento e controllato',              note:'⚠️ Core antirotazione — L5-S1',   rest:20 },
+          { name:'Hollow hold',                  sets:3, reps:'30"',       detail:'Gambe il più basse possibile — schiena incollata',         note:'',                                rest:20 },
+        ]),
+      ],
     },
 
-    cardio: {
+    // ─── MARTEDÌ: Spalle + Trapezio ──────────────────────────────────────────
+    spalle: {
       warmup: [
-        { name:'Cyclette riscaldamento', sets:1,reps:'5 min',detail:'Resistenza bassa',note:'',rest:0},
+        { name:'Rotazioni spalle avanti/indietro',sets:2,reps:'15',        detail:'Piccole poi grandi — lente — mobilità articolare',         note:'',                                rest:20 },
+        { name:'Pendolo braccia',                sets:2, reps:'20',        detail:'Lascia dondolare liberamente — decomprime la spalla',      note:'✅ Decompressione articolare',     rest:20 },
+        { name:'Face pull elastico mobilità',    sets:2, reps:'12',        detail:'Leggero — solo attivazione — gomiti alti',                 note:'',                                rest:20 },
       ],
-      main: phase===1 ? [
-        { name:'Cyclette intervallata', sets:6,reps:'2min media + 1min alta',detail:'Sellino alto · Schiena dritta',note:'⚠️ Anca safe',rest:0},
-        { name:'Plank su gomiti',       sets:3,reps:'30"',detail:'Schiena piatta · Respira',note:'Safe se schiena è neutra',rest:30},
-        { name:'Dead bug',              sets:3,reps:'10/lato',detail:'Braccio e gamba opposta lentamente',note:'✅ Il migliore per ernia',rest:45},
-        { name:'Bird dog',              sets:3,reps:'10/lato',detail:'A 4 zampe · Braccio e gamba opposta',note:'✅ Consigliato L5-S1',rest:45},
-        { name:'Glute bridge',          sets:3,reps:'15',detail:'Tieni 2" in cima',note:'Glutei senza stress anca',rest:45},
-      ] : phase===2 ? [
-        { name:'Cyclette intervallata', sets:12,reps:'1min media + 1min alta',detail:'',note:'',rest:0},
-        { name:'Plank laterale',        sets:3,reps:'25"/lato',detail:'Gomito a terra',note:'⚠️ Anca: piega ginocchio basso',rest:30},
-        { name:'Dead bug con elastico', sets:3,reps:'12/lato',detail:'',note:'',rest:45},
-        { name:'Superman hold',         sets:3,reps:'12',detail:'Sdraiato prono · 3" in alto',note:'⚠️ Piccola estensione',rest:45},
-        { name:'Glute bridge con manubrio',sets:3,reps:'15',detail:'7.5kg sul bacino',note:'',rest:45},
-        { name:'Pallof press elastico', sets:3,reps:'12/lato',detail:'Rotazione core contro resistenza',note:'',rest:45},
+      main: phase === 1 ? [
+        { name:'Alzate laterali 5kg',            sets:4, reps:'12',        detail:'Gomiti flessi 10° — pausa 1" in cima — discesa 3"',        note:'✅ V shape — deltoide laterale',   rest:60 },
+        { name:'Press sopra testa seduto 7.5kg', sets:4, reps:'10',        detail:'Schiena neutra — non arcuare lombare — discesa controllata',note:'⚠️ Sempre seduto — mai in piedi', rest:60 },
+        { name:'Alzate frontali 5kg',            sets:3, reps:'12',        detail:'Fino a 90° — no oltre — deltoide anteriore',              note:'',                                rest:60 },
+        { name:'Face pull elastico',             sets:4, reps:'15',        detail:'Altezza occhi — gomiti alti — tira verso il naso',         note:'✅ Postura + spalle posteriori',   rest:60 },
+        { name:'Shrug manubri 7.5kg',            sets:4, reps:'15',        detail:'Solo verticale — pausa 1" in cima — nessuna rotazione',   note:'✅ Trapezio — sicuro per anca',    rest:60 },
+        { name:'Upright row elastico',           sets:3, reps:'12',        detail:'Gomiti sopra i polsi — presa larga — salita controllata',  note:'⚠️ Mai forzare se senti la spalla', rest:60 },
+      ] : phase === 2 ? [
+        { name:'Alzate laterali 7.5kg pausa 1"',sets:4, reps:'12',        detail:'7.5kg — pausa 1" in cima — discesa 3" — gomiti flessi',   note:'✅ V shape intensificato',        rest:60 },
+        { name:'Press Arnold seduto 7.5kg',      sets:4, reps:'10',        detail:'Pronazione durante la salita — schiena dritta al muro',    note:'⚠️ Seduto sempre — schiena dritta', rest:75 },
+        { name:'Alzate front+lat superset 5kg',  sets:5, reps:'12+12',     detail:'12 frontali poi 12 laterali senza pausa',                  note:'Superset deltoide completo',      rest:30 },
+        { name:'Face pull con rotazione',        sets:4, reps:'15',        detail:'Tira e ruota i polsi verso fuori — cuffia dei rotatori',   note:'✅ Cuffia rotatori + postura',     rest:60 },
+        { name:'Shrug 7.5kg pausa 2"',           sets:4, reps:'15',        detail:'Pausa 2" in cima — discesa 4" — trapezio in tensione',     note:'✅ Trapezio gonfio',              rest:60 },
+        { name:'Upright row manubri 5kg',        sets:4, reps:'12',        detail:'Gomiti sopra i polsi — presa larga — controllo totale',    note:'⚠️ No se senti impingement',      rest:60 },
       ] : [
-        { name:'Cyclette HIIT',         sets:12,reps:'30" sprint + 90" rec',detail:'',note:'',rest:0},
-        { name:'Plank TRX roll-out',    sets:3,reps:'10',detail:'Piedi nel TRX, rotola avanti',note:'⚠️ Schiena assolutamente piatta',rest:45},
-        { name:'Dead bug avanzato',     sets:3,reps:'12/lato',detail:'5" per ripetizione',note:'',rest:45},
-        { name:'Side plank rotazione',  sets:3,reps:'10/lato',detail:'Braccio libero gira sotto',note:'',rest:45},
-        { name:'Glute bridge singola gamba',sets:3,reps:'12/lato',detail:'Controlla il bacino',note:'',rest:45},
-        { name:'Hollow hold',           sets:3,reps:'20"',detail:'Schiena incollata a terra',note:'⚠️ Alza gambe se senti L5-S1',rest:30},
+        { name:'Drop set alzate lat 7.5→5→2.5kg',sets:4,reps:'8+6+6',     detail:'Senza pausa tra i pesi — brucia il deltoide medio',        note:'✅ V shape definito',              rest:90 },
+        { name:'Giant set deltoide',             sets:4, reps:'10',        detail:'Lat+front+post sequenza — 3 angoli in un giro',            note:'Nessun riposo tra i tre',         rest:90 },
+        { name:'Press Arnold drop set',          sets:4, reps:'10+8',      detail:'7.5kg×10 poi 5kg×8 senza pausa — seduto sempre',          note:'⚠️ Seduto — schiena al muro',     rest:90 },
+        { name:'Shrug esplosivo 7.5kg',          sets:4, reps:'20',        detail:'Salita rapida — pausa 1" — discesa controllata',           note:'✅ Trapezio in potenza',           rest:60 },
+        { name:'Face pull alta frequenza',       sets:4, reps:'20',        detail:'Elastico leggero — veloce ma controllato',                 note:'✅ Spalle posteriori e postura',   rest:45 },
+        { name:'Reverse fly drop set',           sets:4, reps:'12+10',     detail:'5kg×12 poi 2.5kg×10 senza pausa',                         note:'⚠️ Schiena neutra — no arrotolare', rest:90 },
       ],
       cooldown: [
-        { name:'Cyclette defaticamento',    sets:1,reps:'5 min',detail:'Resistenza minima',note:'',rest:0},
-        { name:'Stretching hip flexor',     sets:1,reps:'30"/lato',detail:'In piedi · Non inginocchiarti se anca fa male',note:'',rest:10},
-      ]
+        { name:'Stretching spalla cross-body',   sets:1, reps:'30"/lato',  detail:'Braccio traverso al petto — tieni fisso — respira',       note:'',                                rest:10 },
+        { name:'Cat-cow lento',                  sets:2, reps:'10',        detail:'Mobilità colonna — chiudi la sessione',                    note:'✅ Ottimo per L5-S1',             rest:20 },
+        CARDIO_SEP,
+        ...(phase === 1 ? [
+          { name:'Step touch sul posto',         sets:1, reps:'5 min',     detail:'Passo laterale alternato — ritmo costante — bassa intensità',note:'✅ Cardio safe per anca',       rest:0  },
+        ] : phase === 2 ? [
+          { name:'Circuit cardio step 3 giri',   sets:3, reps:'30"+30"',   detail:'Step veloci sul posto 30" poi rest 30" — simula jumping jack',note:'❤️ Soglia anaerobica',         rest:30 },
+        ] : [
+          { name:'Tabata step veloci',           sets:8, reps:'20"+10"',   detail:'20" step veloci 10" rest × 8 round — massima intensità',   note:'❤️ Alta intensità — cuore forte', rest:0  },
+        ]),
+        CORE_SEP,
+        ...(phase === 1 ? [
+          { name:'Dead bug',                     sets:3, reps:'10/lato',   detail:'Braccio e gamba opposta lenti — 4" per rep',               note:'✅ Miglior esercizio per ernia',   rest:40 },
+          { name:'Pallof press elastico',        sets:3, reps:'10/lato',   detail:'Altezza petto — spingi avanti — core antirotazione',       note:'✅ Safe L5-S1',                   rest:40 },
+        ] : phase === 2 ? [
+          { name:'Dead bug',                     sets:3, reps:'12/lato',   detail:'4" per rep — controllo totale — schiena a terra',          note:'✅ Safe L5-S1',                   rest:30 },
+          { name:'Pallof press pausa',           sets:3, reps:'12/lato',   detail:'2" di pausa al centro — elastico a media resistenza',      note:'',                                rest:30 },
+        ] : [
+          { name:'Dead bug avanzato 5"',         sets:3, reps:'10/lato',   detail:'5 secondi per ripetizione — massimo controllo',            note:'✅ Safe L5-S1',                   rest:30 },
+          { name:'Pallof press con pausa',       sets:3, reps:'12/lato',   detail:'2" di pausa al centro — elastico alta resistenza',         note:'',                                rest:30 },
+        ]),
+      ],
     },
 
-    spalle2: {
+    // ─── MERCOLEDÌ: Gambe + Glutei + Core (SAFE L5-S1 + anca) ───────────────
+    gambe: {
       warmup: [
-        { name:'Cerchi con le braccia',sets:2,reps:'15',detail:'Piccoli → grandi',note:'',rest:20},
-        { name:'Pullover TRX mobilità', sets:2,reps:'10',detail:'',note:'',rest:20},
+        { name:'Rotazioni caviglie',             sets:2, reps:'15/lato',   detail:'Cerchi lenti — entrambi i sensi — mobilità articolare',    note:'',                                rest:15 },
+        { name:'Clamshell senza elastico',       sets:2, reps:'12/lato',   detail:'Sdraiato laterale — apri il ginocchio lentamente',         note:'✅ Attivazione gluteo medio',      rest:20 },
+        { name:'Glute bridge bassa intensità',   sets:2, reps:'12',        detail:'Senza peso — solo attivazione — pausa 1" in cima',         note:'✅ Safe per anca e L5-S1',        rest:20 },
       ],
-      main: phase===1 ? [
-        { name:'Curl bicipiti alternati',sets:3,reps:'12/lato',detail:'5kg · Gomito fermo',note:'',rest:60},
-        { name:'Curl martello',          sets:3,reps:'12',detail:'5kg · Presa neutra',note:'',rest:60},
-        { name:'Upright row elastico',   sets:3,reps:'12',detail:'Gomiti sopra i polsi sempre',note:'⚠️ Mai forzare',rest:60},
-        { name:'Alzate laterali elastico',sets:3,reps:'15',detail:'Deltoide medio',note:'',rest:60},
-        { name:'Curl concentrato seduto',sets:3,reps:'10/lato',detail:'5kg · Gomito sul ginocchio',note:'⚠️ Seduto',rest:60},
-      ] : phase===2 ? [
-        { name:'Curl bicipiti 21s',     sets:3,reps:'21',detail:'7kg · 7 basso + 7 alto + 7 completo',note:'Picco del bicipite',rest:60},
-        { name:'Curl martello elastico',sets:3,reps:'12',detail:'7.5kg o elastico medio',note:'',rest:60},
-        { name:'Upright row manubri',   sets:3,reps:'12',detail:'5kg · Lento e controllato',note:'',rest:60},
-        { name:'Alzate laterali seduto',sets:4,reps:'12',detail:'5kg · Core attivo',note:'⚠️ Seduto — schiena safe',rest:60},
-        { name:'Reverse curl',          sets:3,reps:'12',detail:'5kg · Presa prona',note:'Brachioradiale',rest:60},
+      main: phase === 1 ? [
+        { name:'Squat goblet 5kg',               sets:4, reps:'15',        detail:'Max 60° flessione — schiena dritta — peso al petto',       note:'⚠️ No squat profondo — anca safe', rest:60 },
+        { name:'Glute bridge 7.5kg',             sets:4, reps:'15',        detail:'7.5kg sul bacino — pausa 2" in cima — spingi con talloni', note:'✅ Safe per L5-S1 e artrosi anca', rest:45 },
+        { name:'Affondi reverse',                sets:3, reps:'12/lato',   detail:'Passo indietro — piede anteriore fisso — scendi verticale', note:'⚠️ Ginocchio non supera la punta', rest:60 },
+        { name:'Clamshell elastico',             sets:3, reps:'20/lato',   detail:'Elastico leggero alla coscia — apri lentamente',           note:'✅ Gluteo medio — anca sicura',    rest:45 },
+        { name:'Step laterale elastico',         sets:3, reps:'15/lato',   detail:'Elastico sopra le ginocchia — piccoli passi laterali',     note:'⚠️ Gamma piccola — anca controllata', rest:45 },
+        { name:'Wall sit',                       sets:4, reps:'45"',       detail:'Schiena al muro — cosce parallele — respira',              note:'⚠️ Sali solo se anca non protesta', rest:60 },
+      ] : phase === 2 ? [
+        { name:'Squat goblet 7.5kg',             sets:4, reps:'15',        detail:'7.5kg al petto — max 60° — schiena verticale',             note:'⚠️ No profondo — anca safe',      rest:60 },
+        { name:'Glute bridge monopodalico',      sets:4, reps:'12/lato',   detail:'Un piede solo — bacino livellato — pausa 2"',              note:'✅ Glutei intensi — anca safe',    rest:60 },
+        { name:'Affondi laterali',               sets:3, reps:'12/lato',   detail:'Passo laterale — ginocchio non supera 60°',                note:'⚠️ Gamma ridotta — anca controllata', rest:60 },
+        { name:'Leg curl elastico',              sets:4, reps:'15',        detail:'Elastico alla caviglia — sdraiato prono — bicipite femorale',note:'✅ Safe per anca e lombare',      rest:45 },
+        { name:'Clamshell doppio elastico',      sets:4, reps:'20/lato',   detail:'Due elastici alla coscia — maggiore resistenza',           note:'✅ Gluteo medio intenso',          rest:45 },
+        { name:'Wall sit',                       sets:4, reps:'60"',       detail:'Schiena al muro — cosce parallele — 60 secondi',          note:'⚠️ Sali solo se anca non protesta', rest:60 },
       ] : [
-        { name:'Curl superset alt+martello',sets:4,reps:'10+10',detail:'7.5kg',note:'',rest:60},
-        { name:'21s superset',          sets:3,reps:'21',detail:'7.5kg',note:'',rest:60},
-        { name:'Upright + alzate sup.',sets:4,reps:'12+12',detail:'Superset · Brucia i deltoidi',note:'',rest:60},
-        { name:'Curl isometrico',       sets:3,reps:'30"',detail:'7.5kg · Tieni a 90°',note:'',rest:60},
-        { name:'Alzate post. TRX',      sets:3,reps:'12',detail:'Corpo inclinato, apri le braccia',note:'',rest:60},
+        { name:'Squat pulse',                    sets:4, reps:'20',        detail:'Squat 60° — piccoli impulsi in basso — continuo',          note:'⚠️ No rimbalzi profondi — anca safe', rest:60 },
+        { name:'Hip thrust su sedia 7.5kg',      sets:4, reps:'15',        detail:'Schiena sulla sedia — 7.5kg sul bacino — glutei max',      note:'✅ Glutei intensi — anca safe',    rest:60 },
+        { name:'Affondi reverse+laterale superset',sets:4,reps:'10+10/lato',detail:'10 reverse poi 10 laterali stesso lato — nessuna pausa', note:'⚠️ Gamma ridotta — anca controllata', rest:30 },
+        { name:'Nordic curl assistito TRX',      sets:3, reps:'8',         detail:'TRX come supporto — scendi lentamente — ischio-crurali',   note:'✅ Protegge il ginocchio',         rest:75 },
+        { name:'Circuit gambe 3 giri',           sets:3, reps:'senza pausa',detail:'Glute bridge + clamshell + step laterale + wall sit',    note:'⚠️ Tutti safe per anca e L5-S1',   rest:90 },
       ],
       cooldown: [
-        { name:'Stretching bicipite a muro',sets:1,reps:'30"/lato',detail:'Gira il corpo con mano a muro',note:'',rest:10},
-        { name:'Respirazione 4-7-8',        sets:3,reps:'1 respiro',detail:'Inspira 4", trattieni 7", espira 8"',note:'',rest:10},
-      ]
+        { name:'Stretching quadricipite in piedi',sets:1,reps:'30"/lato',  detail:'Tieni con una mano al muro per equilibrio',                note:'',                                rest:10 },
+        { name:'Stretching piriforme sdraiato',  sets:1, reps:'30"/lato',  detail:'Caviglia sul ginocchio opposto — tieni — respira',         note:'✅ Ottimo per artrosi anca',       rest:10 },
+        CARDIO_SEP,
+        ...(phase === 1 ? [
+          { name:'Cyclette media intensità',     sets:1, reps:'10 min',    detail:'Resistenza media — sellino alto — schiena dritta',         note:'❤️ Base cardio aerobica',          rest:0  },
+        ] : phase === 2 ? [
+          { name:'Cyclette HIIT 1min/1min',      sets:1, reps:'12 min',    detail:'1 min media / 1 min alta intensità × 6 round',             note:'❤️ Soglia anaerobica',             rest:0  },
+        ] : [
+          { name:'Cyclette HIIT 40"/20"',        sets:1, reps:'15 min',    detail:'40" sprint / 20" recupero — massima potenza',              note:'❤️ Alta intensità — cuore forte',  rest:0  },
+        ]),
+        CORE_SEP,
+        ...(phase === 1 ? [
+          { name:'Bird dog',                     sets:3, reps:'10/lato',   detail:'A 4 zampe — braccio+gamba opposta — schiena piana',        note:'✅ Safe L5-S1',                   rest:40 },
+          { name:'Glute bridge isometrico',      sets:3, reps:'30"',       detail:'Tieni in cima — glutei stretti — respira',                 note:'✅ Safe anca',                    rest:30 },
+        ] : phase === 2 ? [
+          { name:'Bird dog',                     sets:3, reps:'12/lato',   detail:'Schiena piana — lento e controllato — 3" per rep',         note:'✅ Safe L5-S1',                   rest:30 },
+          { name:'Glute bridge isometrico',      sets:3, reps:'45"',       detail:'Tieni in cima — glutei stretti — respira',                 note:'✅ Safe anca',                    rest:20 },
+        ] : [
+          { name:'Bird dog con manubrio',        sets:3, reps:'10/lato',   detail:'2.5kg sul braccio esteso — equilibrio e controllo',        note:'✅ Safe L5-S1',                   rest:30 },
+          { name:'Glute bridge isometrico',      sets:3, reps:'60"',       detail:'Tieni in cima — glutei stretti — massima durata',          note:'✅ Safe anca',                    rest:20 },
+        ]),
+      ],
     },
 
+    // ─── GIOVEDÌ: Schiena + Bicipiti ─────────────────────────────────────────
     schiena: {
       warmup: [
-        { name:'Cat-cow',              sets:2,reps:'10',detail:'Lento · Mobilità colonna',note:'✅ Ottimo per L5-S1',rest:20},
-        { name:'Rotazioni toraciche',  sets:2,reps:'10/lato',detail:'Seduto, ruota solo il busto',note:'',rest:20},
+        { name:'Cat-cow lento',                  sets:2, reps:'10',        detail:'Mobilità colonna — respira con il movimento — 3" per rep',  note:'✅ Ottimo per L5-S1',             rest:20 },
+        { name:'Rotazioni toraciche seduto',     sets:2, reps:'10/lato',   detail:'Seduto su sedia — ruota solo il busto — cervicale ferma',   note:'',                                rest:20 },
+        { name:'Rematore TRX leggero',           sets:2, reps:'10',        detail:'Corpo 60° — solo attivazione — gomiti indietro',            note:'',                                rest:20 },
       ],
-      main: phase===1 ? [
-        { name:'Rematore TRX',        sets:3,reps:'12',detail:'Corpo 45° · Gomiti indietro',note:'Schiena larga = V shape',rest:60},
-        { name:'Pullover manubrio',   sets:3,reps:'12',detail:'5kg · Sdraiato · Grande dorsale',note:'⚠️ Non iperestendere lombare',rest:60},
-        { name:'Reverse fly manubri', sets:3,reps:'12',detail:'2.5kg · Busto 45° — romboidei',note:'⚠️ Schiena neutra',rest:60},
-        { name:'Glute bridge',        sets:3,reps:'15',detail:'Tieni 2" in cima',note:'✅ Safe per anca',rest:45},
-        { name:'Clamshell elastico',  sets:3,reps:'15/lato',detail:'Sdraiato laterale, apri il ginocchio',note:'Gluteo medio',rest:45},
-      ] : phase===2 ? [
-        { name:'Rematore TRX avanzato',sets:4,reps:'12',detail:'Corpo più orizzontale',note:'',rest:60},
-        { name:'Pullover + pulldown superset',sets:4,reps:'12+12',detail:'',note:'',rest:60},
-        { name:'Reverse fly + shrug superset',sets:4,reps:'10+12',detail:'5kg',note:'',rest:60},
-        { name:'Glute bridge mono',   sets:3,reps:'12/lato',detail:'Un piede solo',note:'',rest:45},
-        { name:'Clamshell avanzato',  sets:3,reps:'20/lato',detail:'Elastico alla coscia',note:'',rest:45},
-        { name:'Step laterale elastico',sets:3,reps:'15/lato',detail:'Piccola gamma di movimento',note:'⚠️ Anca: piano',rest:45},
+      main: phase === 1 ? [
+        { name:'Rematore TRX',                   sets:4, reps:'12',        detail:'Corpo 45° — gomiti stretti indietro — pausa 2" in cima',   note:'✅ Schiena larga — V shape',      rest:60 },
+        { name:'Pullover manubrio 7.5kg',        sets:4, reps:'12',        detail:'Sdraiato — grande dorsale — non iperestendere lombare',     note:'⚠️ Lombare neutrale sempre',      rest:60 },
+        { name:'Reverse fly 5kg',                sets:4, reps:'12',        detail:'Busto 45° — romboidei e deltoide posteriore',              note:'⚠️ Schiena neutra — no arrotolare', rest:60 },
+        { name:'Curl bicipiti alternati 7.5kg',  sets:4, reps:'12/lato',   detail:'Gomito fermo — supinazione in cima — pausa 1"',            note:'',                                rest:60 },
+        { name:'Curl martello 7.5kg',            sets:3, reps:'12',        detail:'Presa neutra — brachioradiale — controllo totale',         note:'',                                rest:60 },
+        { name:'Curl concentrato seduto 7.5kg',  sets:3, reps:'10/lato',   detail:'Gomito sul ginocchio — spremi in cima — 3" discesa',       note:'⚠️ Seduto — schiena safe',        rest:60 },
+      ] : phase === 2 ? [
+        { name:'Rematore TRX avanzato',          sets:4, reps:'12',        detail:'Corpo più orizzontale — massima difficoltà — pausa 2"',    note:'✅ Schiena più larga',             rest:75 },
+        { name:'Pullover+pulldown superset',     sets:4, reps:'12+12',     detail:'7.5kg pullover poi elastico pulldown senza pausa',         note:'✅ Grande dorsale completo',       rest:30 },
+        { name:'Reverse fly drop set 5→2.5kg',  sets:4, reps:'12+10',     detail:'5kg×12 poi 2.5kg×10 senza pausa — romboidei',             note:'⚠️ Schiena neutra',               rest:90 },
+        { name:'Curl 21s 7.5kg',                 sets:3, reps:'21',        detail:'7 metà bassa + 7 metà alta + 7 completo — picco bicipite', note:'',                                rest:75 },
+        { name:'Curl martello elastico',         sets:4, reps:'12',        detail:'Elastico con presa neutra — brachioradiale intenso',       note:'',                                rest:60 },
+        { name:'Curl isometrico 7.5kg',          sets:3, reps:'30"',       detail:'90° isometrico — tieni per 30" — bicipiti in fuoco',       note:'',                                rest:60 },
       ] : [
-        { name:'Rematore TRX monobraccio',sets:4,reps:'10/lato',detail:'',note:'',rest:60},
-        { name:'Pullover isometrico',  sets:3,reps:'15',detail:'7.5kg · 2" in massima allungamento',note:'',rest:60},
-        { name:'Reverse fly drop set',sets:3,reps:'12+10',detail:'5kg→2.5kg senza pausa',note:'',rest:60},
-        { name:'Hip thrust su sedia', sets:4,reps:'15',detail:'Spalle sulla sedia · Spingi i fianchi',note:'Più carico del bridge',rest:45},
-        { name:'Clamshell + abduzione',sets:4,reps:'15/lato',detail:'Doppio elastico',note:'',rest:45},
-        { name:'Lateral walk + squat parziale',sets:3,reps:'15/dir',detail:'Elastico · Squat 30%',note:'⚠️ Anca safe',rest:45},
+        { name:'Rematore TRX monobraccio',       sets:4, reps:'10/lato',   detail:'Corpo inclinato — gomito indietro — bilanciare i lati',    note:'✅ Unilaterale per equilibrio',    rest:75 },
+        { name:'Pullover isometrico 7.5kg',      sets:3, reps:'12',        detail:'Pausa 2" in massimo allungamento — grande dorsale',        note:'⚠️ Lombare neutrale',             rest:75 },
+        { name:'Reverse fly+shrug superset',     sets:4, reps:'10+12',     detail:'5kg reverse fly poi 7.5kg shrug senza pausa',             note:'⚠️ Schiena neutra per fly',       rest:30 },
+        { name:'Curl superset alternato+martello',sets:4,reps:'10+10',     detail:'7.5kg alternati poi 7.5kg martello senza pausa',           note:'✅ Bicipiti esauriti',             rest:30 },
+        { name:'21s superset',                   sets:4, reps:'21',        detail:'7.5kg — 7+7+7 — cadenza lenta 3" per rep',                note:'',                                rest:75 },
+        { name:'Curl con elastico in resistenza',sets:3, reps:'15',        detail:'Elastico aggiuntivo sul manubrio — resistenza variabile',   note:'',                                rest:60 },
       ],
       cooldown: [
-        { name:'Child pose (o ginocchia al petto)',sets:1,reps:'30"',detail:'Alternativa: sdraiato',note:'',rest:10},
-        { name:'Stretching piriforme sdraiato',   sets:1,reps:'30"/lato',detail:'Caviglia sul ginocchio opposto',note:'✅ Ottimo per anca',rest:10},
-      ]
+        { name:'Child pose (ginocchia al petto)', sets:1, reps:'30"',      detail:'Sdraiato — tira le ginocchia — decomprime la lombare',     note:'✅ Ottimo per L5-S1',             rest:10 },
+        { name:'Stretching piriforme sdraiato',  sets:1, reps:'30"/lato',  detail:'Caviglia sul ginocchio opposto — tieni — respira',         note:'✅ Ottimo per artrosi anca',       rest:10 },
+        CARDIO_SEP,
+        ...(phase === 1 ? [
+          { name:'Cyclette ritmo costante',      sets:1, reps:'8 min',     detail:'Resistenza media — sellino alto — schiena dritta',         note:'❤️ Base cardio aerobica',          rest:0  },
+        ] : phase === 2 ? [
+          { name:'Cyclette HIIT',                sets:1, reps:'10 min',    detail:'30" sprint / 30" recupero — sellino alto',                 note:'❤️ Soglia anaerobica',             rest:0  },
+        ] : [
+          { name:'Cyclette HIIT intenso',        sets:1, reps:'12 min',    detail:'20" sprint / 40" recupero — massima intensità',            note:'❤️ Alta intensità',               rest:0  },
+        ]),
+        CORE_SEP,
+        ...(phase === 1 ? [
+          { name:'Plank laterale',               sets:3, reps:'20"/lato',  detail:'Gomito a terra — anca su — non cedere',                    note:'⚠️ Piega ginocchio se anca fa male', rest:30 },
+          { name:'Rollout TRX',                  sets:3, reps:'8',         detail:'Braccia avanti lentamente — schiena piatta',               note:'⚠️ No se senti L5-S1',            rest:40 },
+        ] : phase === 2 ? [
+          { name:'Plank laterale',               sets:3, reps:'30"/lato',  detail:'Gomito a terra — anca su — respira',                       note:'⚠️ Piega ginocchio se anca fa male', rest:25 },
+          { name:'Rollout TRX',                  sets:3, reps:'10',        detail:'Più lento possibile — schiena assolutamente piatta',        note:'⚠️ No se senti L5-S1',            rest:35 },
+        ] : [
+          { name:'Plank laterale con rotazione', sets:3, reps:'10/lato',   detail:'Braccio libero gira sotto il corpo — lento',               note:'⚠️ Anca: versione modificata se serve', rest:25 },
+          { name:'Rollout TRX',                  sets:3, reps:'12',        detail:'Più lento possibile — massimo controllo',                   note:'⚠️ Schiena piatta assoluta',      rest:30 },
+        ]),
+      ],
     },
 
-    fullbody: {
+    // ─── VENERDÌ: Petto + Spalle Volume ──────────────────────────────────────
+    petto2: {
       warmup: [
-        { name:'Cyclette riscaldamento',sets:1,reps:'5 min',detail:'Bassa intensità',note:'',rest:0},
-        { name:'Rotazioni complete',    sets:1,reps:'2 min',detail:'Ogni articolazione · Dal basso in alto',note:'',rest:0},
+        { name:'Rotazioni braccia complete',     sets:2, reps:'15',        detail:'Cerchi grandi avanti e indietro — mobilità completa',      note:'',                                rest:20 },
+        { name:'Aperture elastico al petto',     sets:2, reps:'12',        detail:'Petto aperto — mobilità spalla anteriore',                 note:'',                                rest:20 },
+        { name:'Push-up rialzato lento',         sets:1, reps:'8',         detail:'Solo attivazione — discesa 4" — mani alte',               note:'',                                rest:20 },
       ],
-      main: phase===1 ? [
-        { name:'Cyclette ritmo costante',sets:1,reps:'15 min',detail:'Medio',note:'',rest:0},
-        { name:'Circuit: Alzate lat + Push-up rialz. + Rematore TRX',sets:3,reps:'12+10+12',detail:'60" riposo tra giri',note:'Full upper body',rest:60},
-        { name:'Dead bug',              sets:3,reps:'10/lato',detail:'Core safe',note:'',rest:45},
-        { name:'Glute bridge',          sets:3,reps:'15',detail:'',note:'',rest:45},
-        { name:'Stretching attivo',     sets:1,reps:'10 min',detail:'Tutto il corpo · Nessun rimbalzo',note:'',rest:0},
-      ] : phase===2 ? [
-        { name:'Cyclette HIIT leggero', sets:1,reps:'20 min',detail:'1/1 ratio',note:'',rest:0},
-        { name:'Circuit A spalle: Alzate + Press + Face pull',sets:3,reps:'12',detail:'45" riposo',note:'',rest:45},
-        { name:'Circuit B petto+schiena: Push-up + Rematore',sets:3,reps:'12',detail:'45" riposo',note:'',rest:45},
-        { name:'Circuit C core: Dead bug + Bird dog + Plank',sets:2,reps:'10+10+30"',detail:'',note:'',rest:30},
+      main: phase === 1 ? [
+        { name:'Push-up larghi',                 sets:4, reps:'15',        detail:'Mani oltre le spalle — petto esterno — discesa 3"',        note:'⚠️ Schiena neutra — no lombare',  rest:60 },
+        { name:'Alzate laterali 5kg',            sets:4, reps:'12',        detail:'Pausa 1" in cima — gomiti flessi 10°',                     note:'✅ Deltoide laterale',             rest:60 },
+        { name:'Chest press TRX',               sets:4, reps:'12',        detail:'Corpo inclinato — discesa lenta 3" — petto pieno',         note:'✅ Nessun carico spinale',        rest:60 },
+        { name:'Face pull',                      sets:4, reps:'15',        detail:'Altezza occhi — gomiti alti — tira verso il naso',         note:'✅ Postura + spalle posteriori',   rest:60 },
+        { name:'Croci 7.5kg',                    sets:3, reps:'12',        detail:'Arco ampio — schiena neutra — pausa 1" in basso',          note:'',                                rest:60 },
+        { name:'Tricipiti overhead 5kg',         sets:3, reps:'12',        detail:'Seduto — gomiti vicini — estendi completamente',           note:'⚠️ Seduto sempre',                rest:60 },
+      ] : phase === 2 ? [
+        { name:'Superset Push-up+Alzate lat 5kg',sets:5, reps:'12+12',     detail:'12 push-up poi 12 alzate laterali 5kg senza pausa',        note:'Volume alto — 75s tra serie',     rest:30 },
+        { name:'Superset Chest TRX+Face pull',   sets:4, reps:'12+15',     detail:'Chest press TRX poi face pull elastico senza pausa',       note:'✅ Petto e spalla posteriore',     rest:30 },
+        { name:'Superset Croci+Press Arnold',    sets:4, reps:'10+10',     detail:'7.5kg croci poi 5kg Press Arnold seduto senza pausa',      note:'⚠️ Press sempre seduto',          rest:30 },
+        { name:'Tricipiti superset',             sets:4, reps:'12+12',     detail:'Push-down elastico poi overhead 5kg senza pausa',         note:'✅ Tricipiti completi',            rest:30 },
       ] : [
-        { name:'Cyclette HIIT intenso', sets:1,reps:'25 min',detail:'30" sprint / 90" recupero',note:'',rest:0},
-        { name:'Giant set spalle: Alz.lat + Press + Alz.front + Face pull',sets:3,reps:'10',detail:'60" riposo',note:'Brucia tutto il deltoide',rest:60},
-        { name:'Giant set schiena: Rematore + Pullover + Rev.fly',sets:3,reps:'10',detail:'60" riposo',note:'',rest:60},
-        { name:'Core finisher: Dead bug + Hollow + Plank',sets:2,reps:'12+20"+30"',detail:'',note:'',rest:30},
+        { name:'Giant set petto',                sets:4, reps:'10',        detail:'Push-up deficit + croci 7.5kg + chest TRX — 3 angoli',     note:'Nessun riposo tra i tre',         rest:90 },
+        { name:'Giant set spalle',               sets:4, reps:'10',        detail:'Lat+front+post+press Arnold — 4 esercizi consecutivi',     note:'⚠️ Press sempre seduto',          rest:90 },
+        { name:'Tricipiti circuit 4 esercizi',   sets:3, reps:'3 giri',    detail:'Push-down + overhead + dip + skull crusher — no pausa',   note:'⚠️ Skull crusher seduto — safe',  rest:90 },
       ],
       cooldown: [
-        { name:'Stretching completo',       sets:1,reps:'10 min',detail:'30" per posizione',note:'',rest:0},
-        { name:'Respirazione diaframmatica',sets:5,reps:'1 respiro',detail:'Chiudi la sessione',note:'',rest:0},
-      ]
+        { name:'Stretching petto + spalla',      sets:1, reps:'30"/lato',  detail:'Mano a muro 90° — gira il busto — respira',               note:'',                                rest:10 },
+        { name:'Respirazione diaframmatica',     sets:3, reps:'10',        detail:'Inspira 4" — trattieni 2" — espira 6" — calma totale',     note:'✅ Chiudi la sessione',            rest:15 },
+        CARDIO_SEP,
+        ...(phase === 1 ? [
+          { name:'Cyclette ritmo costante',      sets:1, reps:'10 min',    detail:'Resistenza media — sellino alto — schiena dritta',         note:'❤️ Base cardio aerobica',          rest:0  },
+        ] : phase === 2 ? [
+          { name:'Cyclette HIIT',                sets:1, reps:'12 min',    detail:'30" sprint / 30" recupero — sellino alto',                 note:'❤️ Soglia anaerobica',             rest:0  },
+        ] : [
+          { name:'Cyclette Tabata',              sets:8, reps:'20"+10"',   detail:'20" sprint massimo / 10" rest × 8 round',                  note:'❤️ Alta intensità — cuore forte',  rest:0  },
+        ]),
+        CORE_SEP,
+        ...(phase === 1 ? [
+          { name:'Hollow hold',                  sets:3, reps:'15"',       detail:'Schiena incollata a terra — gambe a 45°',                  note:'⚠️ Alza le gambe se senti L5-S1', rest:30 },
+          { name:'Mountain climber lento',       sets:3, reps:'16',        detail:'8/lato — ginocchio verso petto lentamente',                note:'⚠️ Core attivo — schiena piatta',  rest:35 },
+        ] : phase === 2 ? [
+          { name:'Hollow hold',                  sets:3, reps:'25"',       detail:'Gambe basse se hai controllo — schiena a terra',           note:'',                                rest:25 },
+          { name:'Mountain climber lento',       sets:3, reps:'20',        detail:'10/lato — ritmo controllato',                              note:'⚠️ Core attivo — schiena piatta',  rest:30 },
+        ] : [
+          { name:'Hollow hold',                  sets:3, reps:'30"',       detail:'Gambe il più basse possibile — massimo controllo',         note:'',                                rest:20 },
+          { name:'Mountain climber lento',       sets:3, reps:'30',        detail:'15/lato — più veloce ma sempre controllato',               note:'⚠️ Core attivo',                  rest:25 },
+        ]),
+      ],
     },
+
+    // ─── SABATO: HIIT + Cardio + Addome ──────────────────────────────────────
+    cardio: {
+      warmup: [
+        { name:'Cyclette riscaldamento',         sets:1, reps:'5 min',     detail:'Resistenza bassa — sellino alto — schiena dritta',         note:'⚠️ Anca: sellino alto riduce la flessione', rest:0 },
+      ],
+      main: phase === 1 ? [
+        { name:'Cyclette HIIT',                  sets:10,reps:'1min media+1min alta',detail:'Alterna ogni minuto — × 10 round — sellino alto',note:'⚠️ No in piedi — anca safe',      rest:0  },
+        { name:'Dead bug',                       sets:3, reps:'12/lato',   detail:'Sdraiato — braccio+gamba opposta — 5" per rep',            note:'✅ Miglior esercizio per ernia L5-S1', rest:45 },
+        { name:'Bird dog',                       sets:3, reps:'12/lato',   detail:'A 4 zampe — braccio+gamba opposta — schiena piana',        note:'✅ Consigliato ernia L5-S1',       rest:45 },
+        { name:'Plank su gomiti',                sets:3, reps:'40"',       detail:'Schiena piatta — respira — non cedere i fianchi',          note:'⚠️ Abbandona se senti lombare',    rest:30 },
+        { name:'Glute bridge',                   sets:3, reps:'15',        detail:'Talloni a terra — pausa 2" in cima — glutei stretti',      note:'✅ Safe per L5-S1 e artrosi anca', rest:45 },
+        { name:'Pallof press elastico',          sets:3, reps:'12/lato',   detail:'Spingi avanti — core antirotazione — altezza petto',       note:'✅ Safe L5-S1',                   rest:45 },
+      ] : phase === 2 ? [
+        { name:'Cyclette HIIT',                  sets:16,reps:'45"+45"',   detail:'45" sprint / 45" recupero × 16 round — sellino alto',      note:'⚠️ No in piedi — anca safe',      rest:0  },
+        { name:'Plank laterale',                 sets:3, reps:'35"/lato',  detail:'Gomito a terra — non cedere il fianco — respira',          note:'⚠️ Piega il ginocchio basso se anca protesta', rest:30 },
+        { name:'Dead bug avanzato',              sets:3, reps:'12/lato',   detail:'5" per rep — controllo totale — schiena a terra',          note:'✅ Progressione safe dead bug',    rest:45 },
+        { name:'Hollow hold',                    sets:3, reps:'25"',       detail:'Schiena piatta — gambe a 45° — braccia in alto',           note:'⚠️ Abbassa le gambe se senti L5-S1', rest:45 },
+        { name:'Rollout TRX',                    sets:3, reps:'10',        detail:'Braccia avanti — schiena piatta — lento',                  note:'⚠️ Schiena assolutamente piatta', rest:45 },
+        { name:'Pallof press pausa',             sets:3, reps:'12/lato',   detail:'2" di pausa al centro — elastico a media resistenza',      note:'✅ Core antirotazione',            rest:45 },
+      ] : [
+        { name:'Cyclette HIIT',                  sets:20,reps:'30"+60"',   detail:'30" sprint massimo / 60" recupero × 20 round — sellino alto',note:'⚠️ No in piedi — anca safe',   rest:0  },
+        { name:'Dead bug avanzato',              sets:3, reps:'12/lato',   detail:'5" per rep — controllo totale — massima difficoltà',       note:'✅ Safe al 100% per L5-S1',        rest:45 },
+        { name:'Pallof press',                   sets:3, reps:'12/lato',   detail:'Alta resistenza — 2" di pausa al centro',                  note:'✅ Core antirotazione',            rest:45 },
+        { name:'Plank shoulder tap',             sets:3, reps:'20 tap',    detail:'Non ruotare il bacino — lento e controllato',              note:'⚠️ Core antirotazione — L5-S1',   rest:45 },
+        { name:'Hollow hold',                    sets:3, reps:'30"',       detail:'Gambe il più basse possibile — schiena incollata',         note:'⚠️ Alza le gambe se senti lombare', rest:45 },
+        { name:'Superman hold',                  sets:3, reps:'15',        detail:'Sdraiato prono — solleva braccia e gambe — 3"',            note:'⚠️ No se senti la lombare',       rest:45 },
+        { name:'Side plank con rotazione',       sets:3, reps:'10/lato',   detail:'Braccio libero ruota sotto il corpo — lento',              note:'⚠️ Anca: versione modificata se serve', rest:45 },
+      ],
+      cooldown: [
+        { name:'Cyclette defaticamento',         sets:1, reps:'5 min',     detail:'Resistenza minima — lascia scendere il cuore',             note:'',                                rest:0  },
+        { name:'Stretching completo',            sets:1, reps:'10 min',    detail:'Petto, spalle, gambe, glutei, piriforme — respira',        note:'✅ Stretching totale',             rest:0  },
+        { name:'Respirazione diaframmatica',     sets:1, reps:'5 min',     detail:'Inspira 4" — espira 6" — calma il sistema nervoso',        note:'✅ Recupero completo',             rest:0  },
+      ],
+    },
+
   };
 
   return plans[type] || null;
@@ -549,11 +720,21 @@ let restTotal = 60;
 // SETUP SCREEN
 // ═══════════════════════════════════════════════════════
 
+function getMonthLabel(week) {
+  if (week <= 4)  return 'Mese 1';
+  if (week <= 8)  return 'Mese 2';
+  if (week <= 12) return 'Mese 3';
+  if (week <= 16) return 'Mese 4';
+  if (week <= 20) return 'Mese 5';
+  return 'Mese 6';
+}
+
 function changeWeek(dir) {
-  state.week = Math.max(1, Math.min(6, state.week + dir));
+  state.week = Math.max(1, Math.min(24, state.week + dir));
   document.getElementById('wk-display').textContent = state.week;
-  const phase = state.week <= 2 ? 'Fase 1 · Riattivazione' : state.week <= 4 ? 'Fase 2 · Costruzione' : 'Fase 3 · Definizione';
+  const phase = state.week <= 8 ? 'Fase 1 · Riattivazione' : state.week <= 16 ? 'Fase 2 · Ipertrofia' : 'Fase 3 · Definizione';
   document.getElementById('phase-label').textContent = phase;
+  document.getElementById('month-label').textContent = '· ' + getMonthLabel(state.week);
   renderDayGrid();
 }
 
@@ -586,10 +767,12 @@ function updatePreview() {
   if (!data) return;
 
   const total = data.warmup.length + data.main.length + data.cooldown.length;
+  const phaseNum = state.week <= 8 ? 1 : state.week <= 16 ? 2 : 3;
+  const phaseLabel = phaseNum === 1 ? 'Riattivazione' : phaseNum === 2 ? 'Ipertrofia' : 'Definizione';
   content.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
       <div style="font-size:28px;">${s.emoji}</div>
-      <div><div style="font-weight:700;font-size:16px;">${s.label}</div><div style="font-size:12px;color:var(--text2);">Settimana ${state.week} · ${total} esercizi totali</div></div>
+      <div><div style="font-weight:700;font-size:16px;">${s.label}</div><div style="font-size:12px;color:var(--text2);">Settimana ${state.week} · ${getMonthLabel(state.week)} · Fase ${phaseNum} ${phaseLabel} · ${total} esercizi totali</div></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text2);">🔥 Risc: ${data.warmup.length}</span>
@@ -792,6 +975,9 @@ function stopListening() {}
 // ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
+
+// Imposta etichetta mese iniziale
+document.getElementById('month-label').textContent = '· ' + getMonthLabel(state.week);
 
 renderDayGrid();
 updatePreview();
