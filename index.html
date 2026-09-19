@@ -1,0 +1,937 @@
+<title>Workout Assistant</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181c26;
+  --surface2: #1e2333;
+  --border: #2a3040;
+  --accent: #e8613a;
+  --accent2: #f0883e;
+  --text: #e8eaf0;
+  --text2: #9aa0b4;
+  --text3: #5a6280;
+  --good: #3adc8c;
+  --warn: #f0c93e;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f2f4f8; --surface: #fff; --surface2: #eef0f6;
+    --border: #dde1ec; --text: #161b2e; --text2: #4a5270; --text3: #9aa0b4;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f2f4f8; --surface: #fff; --surface2: #eef0f6;
+  --border: #dde1ec; --text: #161b2e; --text2: #4a5270; --text3: #9aa0b4;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.6;
+  padding-inline:16px; padding-block:20px;
+  max-width:600px; margin-inline:auto;
+  display:flex; flex-direction:column; gap:16px;
+}
+
+/* ── HEADER ── */
+.app-header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+.app-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px; font-weight:900; text-transform:uppercase; letter-spacing:1px;
+}
+.app-title span{color:var(--accent);}
+.session-timer{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px; font-weight:700; color:var(--accent);
+  font-variant-numeric:tabular-nums;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:6px 14px;
+}
+
+/* ── WEEK/DAY SELECTORS ── */
+.selectors{display:flex; gap:10px; flex-wrap:wrap;}
+select{
+  background:var(--surface); border:1.5px solid var(--border); color:var(--text);
+  border-radius:8px; padding:8px 12px; font-size:13px; font-family:'Inter',sans-serif;
+  cursor:pointer; flex:1; min-width:120px;
+}
+select:focus{outline:none; border-color:var(--accent);}
+
+/* ── EXERCISE CARD (session mode) ── */
+.ex-card{
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:14px;
+  transition:border-color 0.2s;
+}
+.ex-card.active-ex{border-color:var(--accent);}
+.ex-card.done-ex{border-color:var(--good); opacity:0.7;}
+
+.ex-top{display:flex; gap:14px; align-items:flex-start;}
+.ex-num{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:36px; font-weight:900; color:var(--accent);
+  line-height:1; min-width:36px;
+}
+.ex-info{flex:1;}
+.ex-name{font-weight:700; font-size:17px; color:var(--text);}
+.ex-detail{font-size:13px; color:var(--text2); margin-top:3px;}
+.ex-note{font-size:12px; color:var(--accent); margin-top:4px; font-style:italic;}
+.ex-actions{display:flex; gap:8px; align-items:center; flex-shrink:0;}
+.yt-btn{
+  background:none; border:1.5px solid var(--border); border-radius:8px;
+  color:var(--text2); padding:8px 10px; cursor:pointer; font-size:16px;
+  text-decoration:none; display:flex; align-items:center; gap:4px;
+  transition:border-color 0.15s, color 0.15s;
+}
+.yt-btn:hover{border-color:#ff0000; color:#ff0000;}
+.ex-sets-badge{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px; font-weight:700; color:var(--text);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:6px 12px; text-align:center;
+  white-space:nowrap;
+}
+.ex-sets-badge small{display:block; font-size:10px; color:var(--text3); font-family:'Inter',sans-serif; font-weight:400;}
+
+/* ── REST TIMER ── */
+.rest-bar{
+  display:none; align-items:center; gap:12px; flex-wrap:wrap;
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface));
+  border:1.5px solid var(--accent); border-radius:12px; padding:14px 16px;
+}
+.rest-bar.visible{display:flex;}
+.rest-label{font-size:13px; color:var(--text2); flex-shrink:0;}
+.rest-countdown{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:32px; font-weight:900; color:var(--accent);
+  font-variant-numeric:tabular-nums; flex:1; text-align:center;
+}
+.rest-track{height:6px; background:var(--surface2); border-radius:99px; flex:1; min-width:80px; overflow:hidden;}
+.rest-fill{height:100%; background:var(--accent); border-radius:99px; transition:width 1s linear;}
+.rest-skip{
+  background:var(--surface2); border:1px solid var(--border); color:var(--text2);
+  border-radius:8px; padding:6px 14px; cursor:pointer; font-size:13px; flex-shrink:0;
+}
+.rest-skip:hover{border-color:var(--accent); color:var(--accent);}
+
+/* ── SECTION LABEL ── */
+.section-lbl{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--text3); display:flex; align-items:center; gap:8px;
+}
+.section-lbl::after{content:''; flex:1; height:1px; background:var(--border);}
+
+/* ── CONTROLS ── */
+.controls{display:flex; gap:10px; flex-wrap:wrap;}
+.btn{
+  flex:1; padding:14px 16px; border-radius:12px; border:none;
+  font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:opacity 0.15s;
+  min-width:120px;
+}
+.btn:hover{opacity:0.85;}
+.btn-primary{background:var(--accent); color:#fff;}
+.btn-secondary{background:var(--surface2); border:1.5px solid var(--border); color:var(--text2);}
+.btn-good{background:var(--good); color:#0f1117;}
+.btn-warn{background:var(--warn); color:#0f1117;}
+.btn:disabled{opacity:0.3; cursor:default;}
+
+/* ── VOICE STATUS ── */
+.voice-bar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; font-size:13px;
+}
+.voice-dot{width:10px; height:10px; border-radius:50%; background:var(--text3); flex-shrink:0;}
+.voice-dot.listening{background:var(--good); animation:pulse 1s ease-in-out infinite;}
+.voice-dot.speaking{background:var(--accent2); animation:pulse 0.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.voice-text{color:var(--text2); flex:1;}
+.voice-toggle{
+  background:none; border:1px solid var(--border); border-radius:6px;
+  color:var(--text2); padding:4px 10px; cursor:pointer; font-size:12px;
+}
+.voice-toggle.on{border-color:var(--good); color:var(--good);}
+
+/* ── PROGRESS ── */
+.prog-row{display:flex; gap:10px; flex-wrap:wrap;}
+.prog-tile{
+  flex:1; min-width:80px; background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:12px; text-align:center;
+}
+.prog-num{
+  font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700;
+  color:var(--accent); font-variant-numeric:tabular-nums;
+}
+.prog-lbl{font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px;}
+
+/* ── DONE SCREEN ── */
+#done-screen{
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  gap:20px; padding:40px 20px; text-align:center;
+  background:var(--surface); border:2px solid var(--good); border-radius:20px;
+}
+#done-screen.visible{display:flex;}
+.done-emoji{font-size:64px;}
+.done-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:42px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--good);
+}
+.done-sub{font-size:15px; color:var(--text2);}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{display:flex; flex-direction:column; gap:16px;}
+#session-screen{display:none; flex-direction:column; gap:14px;}
+
+.hero-mini{
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:24px 20px; text-align:center;
+}
+.hero-mini h2{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:36px; font-weight:900; text-transform:uppercase;
+  color:var(--text); margin-bottom:4px;
+}
+.hero-mini h2 span{color:var(--accent);}
+.hero-mini p{font-size:13px; color:var(--text2);}
+
+.day-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.day-btn{
+  background:var(--surface2); border:1.5px solid var(--border); border-radius:8px;
+  padding:8px 4px; cursor:pointer; text-align:center; transition:all 0.15s;
+}
+.day-btn:hover{border-color:var(--accent2);}
+.day-btn.selected{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 15%,var(--surface2));}
+.day-btn .dn{font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; color:var(--text2);}
+.day-btn.selected .dn{color:var(--accent);}
+.day-btn .dt{font-size:9px; color:var(--text3); text-transform:uppercase; margin-top:2px;}
+.day-btn.rest-day{opacity:0.5;}
+
+.week-sel{
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+}
+.week-sel label{font-size:13px; color:var(--text2); flex:1;}
+.week-num{
+  font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:700; color:var(--accent);
+  font-variant-numeric:tabular-nums; min-width:32px; text-align:center;
+}
+.wk-btn{
+  background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  width:32px; height:32px; border-radius:6px; cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.wk-btn:hover{border-color:var(--accent);}
+</style>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SETUP SCREEN                              -->
+<!-- ══════════════════════════════════════════ -->
+<div id="setup-screen">
+
+  <div class="hero-mini">
+    <h2>Workout <span>Assistant</span></h2>
+    <p>Seleziona settimana e giorno · poi parte la sessione guidata con voce</p>
+  </div>
+
+  <!-- Week selector -->
+  <div class="week-sel">
+    <label>Settimana</label>
+    <button class="wk-btn" onclick="changeWeek(-1)">−</button>
+    <div class="week-num" id="wk-display">1</div>
+    <button class="wk-btn" onclick="changeWeek(1)">+</button>
+    <span style="font-size:12px;color:var(--text3);margin-left:4px;" id="phase-label">Fase 1 · Riattivazione</span>
+  </div>
+
+  <!-- Day grid -->
+  <div>
+    <div class="section-lbl" style="margin-bottom:10px;">Scegli il giorno</div>
+    <div class="day-grid" id="day-grid"></div>
+  </div>
+
+  <!-- Session preview -->
+  <div id="preview-card" style="display:none;">
+    <div class="section-lbl" style="margin-bottom:10px;">Riepilogo sessione</div>
+    <div class="ex-card" id="preview-content"></div>
+  </div>
+
+  <button class="btn btn-primary" id="start-btn" onclick="startSession()" disabled>▶ Inizia Sessione</button>
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  SESSION SCREEN                            -->
+<!-- ══════════════════════════════════════════ -->
+<div id="session-screen">
+
+  <div class="app-header">
+    <div class="app-title">Workout <span>Live</span></div>
+    <div class="session-timer" id="session-timer">00:00</div>
+  </div>
+
+  <!-- Progress tiles -->
+  <div class="prog-row">
+    <div class="prog-tile"><div class="prog-num" id="ex-current">1</div><div class="prog-lbl">Esercizio</div></div>
+    <div class="prog-tile"><div class="prog-num" id="ex-total">—</div><div class="prog-lbl">Totale</div></div>
+    <div class="prog-tile"><div class="prog-num" id="set-current">1</div><div class="prog-lbl">Serie</div></div>
+    <div class="prog-tile"><div class="prog-num" id="set-total">—</div><div class="prog-lbl">Serie Tot.</div></div>
+  </div>
+
+  <!-- Voice status -->
+  <div class="voice-bar">
+    <div class="voice-dot" id="voice-dot"></div>
+    <div class="voice-text" id="voice-text">Voce pronta</div>
+    <button class="voice-toggle" id="voice-toggle-btn" onclick="toggleVoice()">🎙 Voce ON</button>
+  </div>
+
+  <!-- Rest timer -->
+  <div class="rest-bar" id="rest-bar">
+    <div class="rest-label">⏸ Recupero</div>
+    <div class="rest-countdown" id="rest-countdown">60</div>
+    <div class="rest-track"><div class="rest-fill" id="rest-fill" style="width:100%"></div></div>
+    <button class="rest-skip" onclick="skipRest()">Salta →</button>
+  </div>
+
+  <!-- Current exercise -->
+  <div id="ex-list"></div>
+
+  <!-- Done screen -->
+  <div id="done-screen">
+    <div class="done-emoji">🏆</div>
+    <div class="done-title">Sessione Completata!</div>
+    <div class="done-sub" id="done-stats"></div>
+    <button class="btn btn-primary" onclick="backToSetup()">← Torna al Menu</button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls" id="session-controls">
+    <button class="btn btn-secondary" onclick="backToSetup()">✕ Esci</button>
+    <button class="btn btn-warn" id="btn-skip" onclick="skipExercise()">⏭ Salta</button>
+    <button class="btn btn-good" id="btn-done" onclick="nextStep()">✓ Fatto</button>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+
+const DAYS_NAMES = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+
+const WEEKLY_STRUCTURE = [
+  { label:'Spalle + Schiena Alta', type:'spalle', emoji:'🔺' },
+  { label:'Petto + Tricipiti',     type:'petto',   emoji:'💪' },
+  { label:'Cyclette + Core',       type:'cardio',  emoji:'🚴' },
+  { label:'Spalle + Bicipiti',     type:'spalle2', emoji:'🔺' },
+  { label:'Schiena + Glutei',      type:'schiena', emoji:'🏋️' },
+  { label:'Cardio + Full Body',    type:'fullbody',emoji:'🔥' },
+  { label:'Riposo Attivo',         type:'rest',    emoji:'🧘' },
+];
+
+// YouTube search URLs per esercizio (aprono ricerca YT)
+const YT_SEARCH = name => `https://www.youtube.com/results?search_query=${encodeURIComponent(name+' esercizio tutorial')}`;
+
+function getExercises(type, week) {
+  const phase = week <= 2 ? 1 : week <= 4 ? 2 : 3;
+
+  const REST_BETWEEN_SETS = 60; // seconds
+
+  const plans = {
+    spalle: {
+      warmup: [
+        { name:'Rotazioni spalle', sets:2, reps:'15', detail:'Avanti e indietro, lente', note:'Solo mobilità', rest:30 },
+        { name:'Pendolo braccia',  sets:2, reps:'20', detail:'Dondola liberamente',      note:'',             rest:30 },
+      ],
+      main: phase===1 ? [
+        { name:'Alzate laterali manubri', sets:3, reps:'12', detail:'2.5kg→5kg · Gomiti flessi', note:'V shape — deltoide laterale', rest:60 },
+        { name:'Press sopra testa seduto',sets:3, reps:'10', detail:'5kg · Schiena neutra',      note:'⚠️ Sempre seduto',            rest:60 },
+        { name:'Alzate frontali',         sets:3, reps:'10', detail:'2.5kg · Fino a 90°',        note:'',                            rest:60 },
+        { name:'Rematore TRX',            sets:3, reps:'12', detail:'Corpo 45° · Gomiti indietro',note:'Schiena larga = V shape',    rest:60 },
+        { name:'Face pull elastico',      sets:3, reps:'15', detail:'Altezza occhi · Gomiti alti',note:'Postura + spalle posteriori',rest:60 },
+      ] : phase===2 ? [
+        { name:'Alzate laterali manubri', sets:4, reps:'12', detail:'5kg · Pausa 1" in cima',    note:'', rest:60 },
+        { name:'Press sopra testa seduto',sets:4, reps:'10', detail:'7.5kg · Discesa 3"',         note:'⚠️ Seduto sempre', rest:60 },
+        { name:'Alzate frontali alternate',sets:3,reps:'10/lato',detail:'5kg',                   note:'', rest:60 },
+        { name:'Rematore TRX avanzato',   sets:4, reps:'12', detail:'Più inclinato',              note:'', rest:60 },
+        { name:'Face pull + rotazione',   sets:4, reps:'15', detail:'Ruota polsi in fuori',       note:'', rest:60 },
+        { name:'Shrug manubri',           sets:3, reps:'15', detail:'7.5kg · Solo verticale',     note:'Trapezi alti', rest:60 },
+      ] : [
+        { name:'Alzate lat. drop set',    sets:3, reps:'12+8',detail:'7.5kg→5kg senza pausa',    note:'Brucia i deltoidi', rest:60 },
+        { name:'Press Arnold seduto',     sets:4, reps:'10', detail:'5kg · Pronazione salita',    note:'⚠️ Seduto', rest:60 },
+        { name:'Alzate front+lat superset',sets:3,reps:'10+10',detail:'5kg ciascuno',            note:'', rest:60 },
+        { name:'Rematore TRX monobraccio',sets:3, reps:'10/lato',detail:'',                      note:'', rest:60 },
+        { name:'Face pull alta freq.',    sets:4, reps:'20', detail:'Elastico leggero veloce',    note:'', rest:60 },
+        { name:'Shrug con pausa',         sets:3, reps:'15', detail:'7.5kg · 2" in cima',         note:'', rest:60 },
+      ],
+      cooldown: [
+        { name:'Stretching spalla cross-body', sets:1, reps:'30" / lato', detail:'', note:'', rest:10 },
+        { name:'Cat-cow lento',                sets:2, reps:'10',          detail:'Mobilità colonna', note:'✅ Ottimo per L5-S1', rest:30 },
+      ]
+    },
+
+    petto: {
+      warmup: [
+        { name:'Rotazioni polsi e gomiti', sets:2, reps:'15', detail:'', note:'', rest:20 },
+        { name:'Aperture elastico al petto',sets:2,reps:'15',detail:'Tira lentamente',note:'',rest:20},
+      ],
+      main: phase===1 ? [
+        { name:'Push-up rialzato (mani su sedia)',sets:3,reps:'10',detail:'Mani alte = meno stress schiena', note:'⚠️ Safe per L5-S1', rest:60},
+        { name:'Chest press TRX',               sets:3,reps:'10',detail:'Corpo inclinato · Lento',           note:'',                  rest:60},
+        { name:'Croci con manubri',              sets:3,reps:'12',detail:'2.5kg · Gomiti flessi',             note:'Sdraiato schiena neutra',rest:60},
+        { name:'Tricipiti push-down elastico',   sets:3,reps:'15',detail:'Gomiti fermi al fianco',            note:'',                  rest:60},
+        { name:'Dip a sedie (parziale)',          sets:3,reps:'10',detail:'Piedi a terra, scendi 45°',         note:'⚠️ Non scendere troppo',rest:60},
+      ] : phase===2 ? [
+        { name:'Push-up standard',             sets:4,reps:'12',detail:'Core attivo · Corpo rigido',         note:'⚠️ Schiena: torna al rialzato se fa male',rest:60},
+        { name:'Chest press TRX con pausa',    sets:4,reps:'10',detail:'Pausa 2" in basso',                  note:'',rest:60},
+        { name:'Croci + pullover superset',    sets:4,reps:'10+8',detail:'5kg',                              note:'',rest:60},
+        { name:'Tricipiti overhead seduto',    sets:3,reps:'12',detail:'5kg · Gomiti vicini orecchie',       note:'⚠️ Seduto',rest:60},
+        { name:'Diamond push-up rialzato',     sets:3,reps:'10',detail:'Mani a diamante su sedia',           note:'',rest:60},
+      ] : [
+        { name:'Push-up deficit',              sets:4,reps:'12',detail:'Mani su libri · Più range',          note:'',rest:60},
+        { name:'Chest press TRX monobraccio',  sets:3,reps:'8/lato',detail:'',                               note:'',rest:60},
+        { name:'Croci + press superset',       sets:4,reps:'10+10',detail:'5kg croci, 7.5kg press',          note:'',rest:60},
+        { name:'Skull crusher seduto',         sets:3,reps:'12',detail:'5kg · Gomiti fermi',                 note:'',rest:60},
+        { name:'Push-up pike',                 sets:3,reps:'10',detail:'Mani più avanti del normale',        note:'',rest:60},
+      ],
+      cooldown: [
+        { name:'Stretching petto a muro', sets:1,reps:'30"/lato',detail:'Braccia a 90°',note:'',rest:10},
+        { name:'Respirazione diaframmatica',sets:2,reps:'10',detail:'Gonfia la pancia',note:'✅ Ottimo per L5-S1',rest:20},
+      ]
+    },
+
+    cardio: {
+      warmup: [
+        { name:'Cyclette riscaldamento', sets:1,reps:'5 min',detail:'Resistenza bassa',note:'',rest:0},
+      ],
+      main: phase===1 ? [
+        { name:'Cyclette intervallata', sets:6,reps:'2min media + 1min alta',detail:'Sellino alto · Schiena dritta',note:'⚠️ Anca safe',rest:0},
+        { name:'Plank su gomiti',       sets:3,reps:'30"',detail:'Schiena piatta · Respira',note:'Safe se schiena è neutra',rest:30},
+        { name:'Dead bug',              sets:3,reps:'10/lato',detail:'Braccio e gamba opposta lentamente',note:'✅ Il migliore per ernia',rest:45},
+        { name:'Bird dog',              sets:3,reps:'10/lato',detail:'A 4 zampe · Braccio e gamba opposta',note:'✅ Consigliato L5-S1',rest:45},
+        { name:'Glute bridge',          sets:3,reps:'15',detail:'Tieni 2" in cima',note:'Glutei senza stress anca',rest:45},
+      ] : phase===2 ? [
+        { name:'Cyclette intervallata', sets:12,reps:'1min media + 1min alta',detail:'',note:'',rest:0},
+        { name:'Plank laterale',        sets:3,reps:'25"/lato',detail:'Gomito a terra',note:'⚠️ Anca: piega ginocchio basso',rest:30},
+        { name:'Dead bug con elastico', sets:3,reps:'12/lato',detail:'',note:'',rest:45},
+        { name:'Superman hold',         sets:3,reps:'12',detail:'Sdraiato prono · 3" in alto',note:'⚠️ Piccola estensione',rest:45},
+        { name:'Glute bridge con manubrio',sets:3,reps:'15',detail:'7.5kg sul bacino',note:'',rest:45},
+        { name:'Pallof press elastico', sets:3,reps:'12/lato',detail:'Rotazione core contro resistenza',note:'',rest:45},
+      ] : [
+        { name:'Cyclette HIIT',         sets:12,reps:'30" sprint + 90" rec',detail:'',note:'',rest:0},
+        { name:'Plank TRX roll-out',    sets:3,reps:'10',detail:'Piedi nel TRX, rotola avanti',note:'⚠️ Schiena assolutamente piatta',rest:45},
+        { name:'Dead bug avanzato',     sets:3,reps:'12/lato',detail:'5" per ripetizione',note:'',rest:45},
+        { name:'Side plank rotazione',  sets:3,reps:'10/lato',detail:'Braccio libero gira sotto',note:'',rest:45},
+        { name:'Glute bridge singola gamba',sets:3,reps:'12/lato',detail:'Controlla il bacino',note:'',rest:45},
+        { name:'Hollow hold',           sets:3,reps:'20"',detail:'Schiena incollata a terra',note:'⚠️ Alza gambe se senti L5-S1',rest:30},
+      ],
+      cooldown: [
+        { name:'Cyclette defaticamento',    sets:1,reps:'5 min',detail:'Resistenza minima',note:'',rest:0},
+        { name:'Stretching hip flexor',     sets:1,reps:'30"/lato',detail:'In piedi · Non inginocchiarti se anca fa male',note:'',rest:10},
+      ]
+    },
+
+    spalle2: {
+      warmup: [
+        { name:'Cerchi con le braccia',sets:2,reps:'15',detail:'Piccoli → grandi',note:'',rest:20},
+        { name:'Pullover TRX mobilità', sets:2,reps:'10',detail:'',note:'',rest:20},
+      ],
+      main: phase===1 ? [
+        { name:'Curl bicipiti alternati',sets:3,reps:'12/lato',detail:'5kg · Gomito fermo',note:'',rest:60},
+        { name:'Curl martello',          sets:3,reps:'12',detail:'5kg · Presa neutra',note:'',rest:60},
+        { name:'Upright row elastico',   sets:3,reps:'12',detail:'Gomiti sopra i polsi sempre',note:'⚠️ Mai forzare',rest:60},
+        { name:'Alzate laterali elastico',sets:3,reps:'15',detail:'Deltoide medio',note:'',rest:60},
+        { name:'Curl concentrato seduto',sets:3,reps:'10/lato',detail:'5kg · Gomito sul ginocchio',note:'⚠️ Seduto',rest:60},
+      ] : phase===2 ? [
+        { name:'Curl bicipiti 21s',     sets:3,reps:'21',detail:'7kg · 7 basso + 7 alto + 7 completo',note:'Picco del bicipite',rest:60},
+        { name:'Curl martello elastico',sets:3,reps:'12',detail:'7.5kg o elastico medio',note:'',rest:60},
+        { name:'Upright row manubri',   sets:3,reps:'12',detail:'5kg · Lento e controllato',note:'',rest:60},
+        { name:'Alzate laterali seduto',sets:4,reps:'12',detail:'5kg · Core attivo',note:'⚠️ Seduto — schiena safe',rest:60},
+        { name:'Reverse curl',          sets:3,reps:'12',detail:'5kg · Presa prona',note:'Brachioradiale',rest:60},
+      ] : [
+        { name:'Curl superset alt+martello',sets:4,reps:'10+10',detail:'7.5kg',note:'',rest:60},
+        { name:'21s superset',          sets:3,reps:'21',detail:'7.5kg',note:'',rest:60},
+        { name:'Upright + alzate sup.',sets:4,reps:'12+12',detail:'Superset · Brucia i deltoidi',note:'',rest:60},
+        { name:'Curl isometrico',       sets:3,reps:'30"',detail:'7.5kg · Tieni a 90°',note:'',rest:60},
+        { name:'Alzate post. TRX',      sets:3,reps:'12',detail:'Corpo inclinato, apri le braccia',note:'',rest:60},
+      ],
+      cooldown: [
+        { name:'Stretching bicipite a muro',sets:1,reps:'30"/lato',detail:'Gira il corpo con mano a muro',note:'',rest:10},
+        { name:'Respirazione 4-7-8',        sets:3,reps:'1 respiro',detail:'Inspira 4", trattieni 7", espira 8"',note:'',rest:10},
+      ]
+    },
+
+    schiena: {
+      warmup: [
+        { name:'Cat-cow',              sets:2,reps:'10',detail:'Lento · Mobilità colonna',note:'✅ Ottimo per L5-S1',rest:20},
+        { name:'Rotazioni toraciche',  sets:2,reps:'10/lato',detail:'Seduto, ruota solo il busto',note:'',rest:20},
+      ],
+      main: phase===1 ? [
+        { name:'Rematore TRX',        sets:3,reps:'12',detail:'Corpo 45° · Gomiti indietro',note:'Schiena larga = V shape',rest:60},
+        { name:'Pullover manubrio',   sets:3,reps:'12',detail:'5kg · Sdraiato · Grande dorsale',note:'⚠️ Non iperestendere lombare',rest:60},
+        { name:'Reverse fly manubri', sets:3,reps:'12',detail:'2.5kg · Busto 45° — romboidei',note:'⚠️ Schiena neutra',rest:60},
+        { name:'Glute bridge',        sets:3,reps:'15',detail:'Tieni 2" in cima',note:'✅ Safe per anca',rest:45},
+        { name:'Clamshell elastico',  sets:3,reps:'15/lato',detail:'Sdraiato laterale, apri il ginocchio',note:'Gluteo medio',rest:45},
+      ] : phase===2 ? [
+        { name:'Rematore TRX avanzato',sets:4,reps:'12',detail:'Corpo più orizzontale',note:'',rest:60},
+        { name:'Pullover + pulldown superset',sets:4,reps:'12+12',detail:'',note:'',rest:60},
+        { name:'Reverse fly + shrug superset',sets:4,reps:'10+12',detail:'5kg',note:'',rest:60},
+        { name:'Glute bridge mono',   sets:3,reps:'12/lato',detail:'Un piede solo',note:'',rest:45},
+        { name:'Clamshell avanzato',  sets:3,reps:'20/lato',detail:'Elastico alla coscia',note:'',rest:45},
+        { name:'Step laterale elastico',sets:3,reps:'15/lato',detail:'Piccola gamma di movimento',note:'⚠️ Anca: piano',rest:45},
+      ] : [
+        { name:'Rematore TRX monobraccio',sets:4,reps:'10/lato',detail:'',note:'',rest:60},
+        { name:'Pullover isometrico',  sets:3,reps:'15',detail:'7.5kg · 2" in massima allungamento',note:'',rest:60},
+        { name:'Reverse fly drop set',sets:3,reps:'12+10',detail:'5kg→2.5kg senza pausa',note:'',rest:60},
+        { name:'Hip thrust su sedia', sets:4,reps:'15',detail:'Spalle sulla sedia · Spingi i fianchi',note:'Più carico del bridge',rest:45},
+        { name:'Clamshell + abduzione',sets:4,reps:'15/lato',detail:'Doppio elastico',note:'',rest:45},
+        { name:'Lateral walk + squat parziale',sets:3,reps:'15/dir',detail:'Elastico · Squat 30%',note:'⚠️ Anca safe',rest:45},
+      ],
+      cooldown: [
+        { name:'Child pose (o ginocchia al petto)',sets:1,reps:'30"',detail:'Alternativa: sdraiato',note:'',rest:10},
+        { name:'Stretching piriforme sdraiato',   sets:1,reps:'30"/lato',detail:'Caviglia sul ginocchio opposto',note:'✅ Ottimo per anca',rest:10},
+      ]
+    },
+
+    fullbody: {
+      warmup: [
+        { name:'Cyclette riscaldamento',sets:1,reps:'5 min',detail:'Bassa intensità',note:'',rest:0},
+        { name:'Rotazioni complete',    sets:1,reps:'2 min',detail:'Ogni articolazione · Dal basso in alto',note:'',rest:0},
+      ],
+      main: phase===1 ? [
+        { name:'Cyclette ritmo costante',sets:1,reps:'15 min',detail:'Medio',note:'',rest:0},
+        { name:'Circuit: Alzate lat + Push-up rialz. + Rematore TRX',sets:3,reps:'12+10+12',detail:'60" riposo tra giri',note:'Full upper body',rest:60},
+        { name:'Dead bug',              sets:3,reps:'10/lato',detail:'Core safe',note:'',rest:45},
+        { name:'Glute bridge',          sets:3,reps:'15',detail:'',note:'',rest:45},
+        { name:'Stretching attivo',     sets:1,reps:'10 min',detail:'Tutto il corpo · Nessun rimbalzo',note:'',rest:0},
+      ] : phase===2 ? [
+        { name:'Cyclette HIIT leggero', sets:1,reps:'20 min',detail:'1/1 ratio',note:'',rest:0},
+        { name:'Circuit A spalle: Alzate + Press + Face pull',sets:3,reps:'12',detail:'45" riposo',note:'',rest:45},
+        { name:'Circuit B petto+schiena: Push-up + Rematore',sets:3,reps:'12',detail:'45" riposo',note:'',rest:45},
+        { name:'Circuit C core: Dead bug + Bird dog + Plank',sets:2,reps:'10+10+30"',detail:'',note:'',rest:30},
+      ] : [
+        { name:'Cyclette HIIT intenso', sets:1,reps:'25 min',detail:'30" sprint / 90" recupero',note:'',rest:0},
+        { name:'Giant set spalle: Alz.lat + Press + Alz.front + Face pull',sets:3,reps:'10',detail:'60" riposo',note:'Brucia tutto il deltoide',rest:60},
+        { name:'Giant set schiena: Rematore + Pullover + Rev.fly',sets:3,reps:'10',detail:'60" riposo',note:'',rest:60},
+        { name:'Core finisher: Dead bug + Hollow + Plank',sets:2,reps:'12+20"+30"',detail:'',note:'',rest:30},
+      ],
+      cooldown: [
+        { name:'Stretching completo',       sets:1,reps:'10 min',detail:'30" per posizione',note:'',rest:0},
+        { name:'Respirazione diaframmatica',sets:5,reps:'1 respiro',detail:'Chiudi la sessione',note:'',rest:0},
+      ]
+    },
+  };
+
+  return plans[type] || null;
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+
+let state = {
+  week: 1,
+  day: 0,
+  exerciseIdx: 0,
+  setIdx: 0,
+  phase: 'warmup',   // warmup | main | cooldown
+  inRest: false,
+  sessionActive: false,
+  voiceEnabled: true,
+  listening: false,
+};
+
+let allExercises = []; // flat list: [{section, ex}, ...]
+let sessionStartTime = null;
+let sessionTimerInterval = null;
+let restInterval = null;
+let restTotal = 60;
+let recognition = null;
+
+// ═══════════════════════════════════════════════════════
+// SETUP SCREEN
+// ═══════════════════════════════════════════════════════
+
+function changeWeek(dir) {
+  state.week = Math.max(1, Math.min(6, state.week + dir));
+  document.getElementById('wk-display').textContent = state.week;
+  const phase = state.week <= 2 ? 'Fase 1 · Riattivazione' : state.week <= 4 ? 'Fase 2 · Costruzione' : 'Fase 3 · Definizione';
+  document.getElementById('phase-label').textContent = phase;
+  renderDayGrid();
+}
+
+function renderDayGrid() {
+  const grid = document.getElementById('day-grid');
+  grid.innerHTML = '';
+  WEEKLY_STRUCTURE.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (i === state.day ? ' selected' : '') + (s.type === 'rest' ? ' rest-day' : '');
+    btn.innerHTML = `<div class="dn">${DAYS_NAMES[i]}</div><div class="dt">${s.emoji}</div>`;
+    btn.onclick = () => { state.day = i; renderDayGrid(); updatePreview(); };
+    grid.appendChild(btn);
+  });
+}
+
+function updatePreview() {
+  const s = WEEKLY_STRUCTURE[state.day];
+  const card = document.getElementById('preview-card');
+  const content = document.getElementById('preview-content');
+  const startBtn = document.getElementById('start-btn');
+
+  if (s.type === 'rest') {
+    content.innerHTML = `<div style="text-align:center;padding:20px 0;"><div style="font-size:36px;">🧘</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;margin-top:8px;color:var(--text2);">Riposo Attivo</div><div style="font-size:13px;color:var(--text3);margin-top:6px;">Camminata, stretching, yoga leggero</div></div>`;
+    card.style.display = 'block';
+    startBtn.disabled = true;
+    return;
+  }
+
+  const data = getExercises(s.type, state.week);
+  if (!data) return;
+
+  const total = data.warmup.length + data.main.length + data.cooldown.length;
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="font-size:28px;">${s.emoji}</div>
+      <div><div style="font-weight:700;font-size:16px;">${s.label}</div><div style="font-size:12px;color:var(--text2);">Settimana ${state.week} · ${total} esercizi totali</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text2);">🔥 Risc: ${data.warmup.length}</span>
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text2);">💪 Principale: ${data.main.length}</span>
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--accent);">🧊 Defaticamento: ${data.cooldown.length}</span>
+    </div>
+  `;
+  card.style.display = 'block';
+  startBtn.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════════
+
+function startSession() {
+  const s = WEEKLY_STRUCTURE[state.day];
+  const data = getExercises(s.type, state.week);
+  if (!data) return;
+
+  // Build flat exercise list
+  allExercises = [];
+  data.warmup.forEach(ex => allExercises.push({ section: 'warmup', ex }));
+  data.main.forEach(ex => allExercises.push({ section: 'main', ex }));
+  data.cooldown.forEach(ex => allExercises.push({ section: 'cooldown', ex }));
+
+  state.exerciseIdx = 0;
+  state.setIdx = 0;
+  state.inRest = false;
+  state.sessionActive = true;
+
+  document.getElementById('setup-screen').style.display = 'none';
+  const ss = document.getElementById('session-screen');
+  ss.style.display = 'flex';
+  ss.style.flexDirection = 'column';
+  ss.style.gap = '14px';
+
+  document.getElementById('ex-total').textContent = allExercises.length;
+  document.getElementById('done-screen').classList.remove('visible');
+  document.getElementById('session-controls').style.display = 'flex';
+
+  sessionStartTime = Date.now();
+  sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+
+  initVoice();
+  renderCurrentExercise();
+  speakCurrentExercise();
+}
+
+function updateSessionTimer() {
+  const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('session-timer').textContent = `${m}:${s}`;
+}
+
+function renderCurrentExercise() {
+  if (state.exerciseIdx >= allExercises.length) { finishSession(); return; }
+  const { section, ex } = allExercises[state.exerciseIdx];
+  const currentSet = state.setIdx + 1;
+  const totalSets = ex.sets;
+
+  document.getElementById('ex-current').textContent = state.exerciseIdx + 1;
+  document.getElementById('set-current').textContent = currentSet;
+  document.getElementById('set-total').textContent = totalSets;
+
+  const sectionEmoji = section === 'warmup' ? '🔥 Riscaldamento' : section === 'main' ? '💪 Principale' : '🧊 Defaticamento';
+
+  const html = `
+    <div class="section-lbl" style="margin-bottom:10px;">${sectionEmoji}</div>
+    ${allExercises.map((item, i) => {
+      const done = i < state.exerciseIdx;
+      const active = i === state.exerciseIdx;
+      return `<div class="ex-card ${done ? 'done-ex' : active ? 'active-ex' : ''}" style="${!active && !done ? 'opacity:0.4' : ''}">
+        <div class="ex-top">
+          <div class="ex-num">${i + 1}</div>
+          <div class="ex-info">
+            <div class="ex-name">${item.ex.name}</div>
+            <div class="ex-detail">${item.ex.detail}</div>
+            ${item.ex.note ? `<div class="ex-note">${item.ex.note}</div>` : ''}
+          </div>
+          <div class="ex-actions">
+            <a class="yt-btn" href="${YT_SEARCH(item.ex.name)}" target="_blank" title="Cerca su YouTube">▶</a>
+            <div class="ex-sets-badge">${item.ex.sets}×${item.ex.reps}<small>serie × rip.</small></div>
+          </div>
+        </div>
+        ${active ? `<div style="font-size:13px;color:var(--text2);padding:10px;background:var(--surface2);border-radius:8px;">
+          ⏱ Serie ${currentSet} di ${totalSets} — Fai le ${item.ex.reps} ripetizioni, poi premi <strong>Fatto</strong>
+        </div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+  document.getElementById('ex-list').innerHTML = html;
+  // scroll active into view
+  setTimeout(() => {
+    const active = document.querySelector('.active-ex');
+    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+function nextStep() {
+  if (state.inRest) { skipRest(); return; }
+  const { ex } = allExercises[state.exerciseIdx];
+  state.setIdx++;
+  if (state.setIdx < ex.sets) {
+    // more sets — start rest
+    startRest(ex.rest || 60);
+    speakRest(ex.rest || 60, state.setIdx + 1, ex.sets);
+  } else {
+    // next exercise
+    state.exerciseIdx++;
+    state.setIdx = 0;
+    stopRest();
+    if (state.exerciseIdx >= allExercises.length) { finishSession(); return; }
+    renderCurrentExercise();
+    speakCurrentExercise();
+  }
+}
+
+function skipExercise() {
+  stopRest();
+  state.exerciseIdx++;
+  state.setIdx = 0;
+  if (state.exerciseIdx >= allExercises.length) { finishSession(); return; }
+  renderCurrentExercise();
+  speakCurrentExercise();
+}
+
+function startRest(seconds) {
+  state.inRest = true;
+  restTotal = seconds;
+  let remaining = seconds;
+  document.getElementById('rest-bar').classList.add('visible');
+  document.getElementById('rest-countdown').textContent = remaining;
+  document.getElementById('rest-fill').style.width = '100%';
+  document.getElementById('btn-done').textContent = '⏭ Salta Riposo';
+
+  restInterval = setInterval(() => {
+    remaining--;
+    document.getElementById('rest-countdown').textContent = remaining;
+    document.getElementById('rest-fill').style.width = `${(remaining / restTotal) * 100}%`;
+    if (remaining <= 3 && remaining > 0) speak(String(remaining));
+    if (remaining <= 0) {
+      skipRest();
+      speak('Via! Inizia!');
+    }
+  }, 1000);
+}
+
+function stopRest() {
+  clearInterval(restInterval);
+  state.inRest = false;
+  document.getElementById('rest-bar').classList.remove('visible');
+  document.getElementById('btn-done').textContent = '✓ Fatto';
+}
+
+function skipRest() {
+  stopRest();
+  renderCurrentExercise();
+}
+
+function finishSession() {
+  clearInterval(sessionTimerInterval);
+  stopRest();
+  state.sessionActive = false;
+
+  // save to localStorage
+  try { localStorage.setItem(`fitav_w${state.week}_d${state.day}`, '1'); } catch {}
+
+  const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  const m = Math.floor(elapsed / 60);
+  const s = elapsed % 60;
+
+  document.getElementById('ex-list').innerHTML = '';
+  document.getElementById('rest-bar').classList.remove('visible');
+  document.getElementById('session-controls').style.display = 'none';
+  document.getElementById('done-screen').classList.add('visible');
+  document.getElementById('done-stats').textContent = `${allExercises.length} esercizi completati in ${m}:${String(s).padStart(2,'0')} minuti`;
+
+  speak(`Sessione completata! Ottimo lavoro! ${m} minuti di allenamento. Bravissimo!`);
+}
+
+function backToSetup() {
+  clearInterval(sessionTimerInterval);
+  clearInterval(restInterval);
+  stopListening();
+  state.sessionActive = false;
+  document.getElementById('session-screen').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('setup-screen').style.flexDirection = 'column';
+  document.getElementById('setup-screen').style.gap = '16px';
+}
+
+// ═══════════════════════════════════════════════════════
+// VOICE SYNTHESIS — via Vercel proxy → ElevenLabs
+// ═══════════════════════════════════════════════════════
+
+let audioQueue = [];
+let isSpeaking = false;
+
+async function speak(text) {
+  if (!state.voiceEnabled) return;
+  audioQueue.push(text);
+  if (!isSpeaking) processQueue();
+}
+
+async function processQueue() {
+  if (audioQueue.length === 0) {
+    isSpeaking = false;
+    setVoiceDot(state.listening ? 'listening' : 'idle');
+    startListening();
+    return;
+  }
+  isSpeaking = true;
+  const text = audioQueue.shift();
+  setVoiceDot('speaking');
+  document.getElementById('voice-text').textContent = '🔊 ' + text.substring(0, 60) + (text.length > 60 ? '…' : '');
+
+  try {
+    const resp = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => { URL.revokeObjectURL(url); processQueue(); };
+    audio.onerror = () => { processQueue(); };
+    await audio.play();
+  } catch(e) {
+    console.warn('TTS fallback:', e);
+    // fallback browser TTS
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'it-IT'; u.rate = 1.05;
+      u.onend = () => processQueue();
+      u.onerror = () => processQueue();
+      window.speechSynthesis.speak(u);
+    } else { processQueue(); }
+  }
+}
+
+function speakCurrentExercise() {
+  if (!state.sessionActive) return;
+  const { ex } = allExercises[state.exerciseIdx];
+  const txt = `${ex.name}. ${ex.sets} serie da ${ex.reps}. ${ex.detail}`;
+  speak(txt);
+}
+
+function speakRest(secs, nextSet, totalSets) {
+  speak(`Recupero di ${secs} secondi. Poi serie ${nextSet} di ${totalSets}.`);
+}
+
+function toggleVoice() {
+  state.voiceEnabled = !state.voiceEnabled;
+  const btn = document.getElementById('voice-toggle-btn');
+  btn.textContent = state.voiceEnabled ? '🎙 Voce ON' : '🔇 Voce OFF';
+  btn.className = 'voice-toggle' + (state.voiceEnabled ? ' on' : '');
+  if (!state.voiceEnabled) { audioQueue = []; isSpeaking = false; stopListening(); }
+}
+
+function setVoiceDot(mode) {
+  const dot = document.getElementById('voice-dot');
+  dot.className = 'voice-dot' + (mode === 'listening' ? ' listening' : mode === 'speaking' ? ' speaking' : '');
+}
+
+// ═══════════════════════════════════════════════════════
+// VOICE RECOGNITION
+// ═══════════════════════════════════════════════════════
+
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('voice-text').textContent = 'Riconoscimento vocale non supportato su questo browser';
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'it-IT';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onresult = (e) => {
+    const t = e.results[0][0].transcript.toLowerCase().trim();
+    document.getElementById('voice-text').textContent = '🎙 Sentito: "' + t + '"';
+    if (t.includes('fatto') || t.includes('avanti') || t.includes('prossimo') || t.includes('next') || t.includes('ok')) {
+      nextStep();
+    } else if (t.includes('salta') || t.includes('skip')) {
+      skipExercise();
+    } else if (t.includes('ripeti') || t.includes('ancora')) {
+      speakCurrentExercise();
+    }
+    setTimeout(startListening, 500);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error !== 'no-speech' && e.error !== 'aborted') {
+      document.getElementById('voice-text').textContent = 'Errore mic: ' + e.error;
+    }
+    setTimeout(() => { if (state.sessionActive && state.voiceEnabled) startListening(); }, 1000);
+  };
+
+  recognition.onend = () => {
+    setVoiceDot('idle');
+    state.listening = false;
+    if (state.sessionActive && state.voiceEnabled) setTimeout(startListening, 300);
+  };
+
+  startListening();
+}
+
+function startListening() {
+  if (!recognition || !state.voiceEnabled || state.listening) return;
+  try {
+    recognition.start();
+    state.listening = true;
+    setVoiceDot('listening');
+    document.getElementById('voice-text').textContent = '🎙 In ascolto… di\' "fatto" per avanzare';
+  } catch(e) {}
+}
+
+function stopListening() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  state.listening = false;
+  setVoiceDot('idle');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+renderDayGrid();
+updatePreview();
+</script>
