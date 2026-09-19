@@ -283,13 +283,6 @@ select:focus{outline:none; border-color:var(--accent);}
     <div class="prog-tile"><div class="prog-num" id="set-total">—</div><div class="prog-lbl">Serie Tot.</div></div>
   </div>
 
-  <!-- Voice status -->
-  <div class="voice-bar">
-    <div class="voice-dot" id="voice-dot"></div>
-    <div class="voice-text" id="voice-text">Voce pronta</div>
-    <button class="voice-toggle" id="voice-toggle-btn" onclick="toggleVoice()">🎙 Voce ON</button>
-  </div>
-
   <!-- Rest timer -->
   <div class="rest-bar" id="rest-bar">
     <div class="rest-label">⏸ Recupero</div>
@@ -543,7 +536,6 @@ let state = {
   phase: 'warmup',   // warmup | main | cooldown
   inRest: false,
   sessionActive: false,
-  voiceEnabled: true,
   listening: false,
 };
 
@@ -552,7 +544,6 @@ let sessionStartTime = null;
 let sessionTimerInterval = null;
 let restInterval = null;
 let restTotal = 60;
-let recognition = null;
 
 // ═══════════════════════════════════════════════════════
 // SETUP SCREEN
@@ -792,141 +783,11 @@ function backToSetup() {
   document.getElementById('setup-screen').style.gap = '16px';
 }
 
-// ═══════════════════════════════════════════════════════
-// VOICE SYNTHESIS — via Vercel proxy → ElevenLabs
-// ═══════════════════════════════════════════════════════
-
-let audioQueue = [];
-let isSpeaking = false;
-
-async function speak(text) {
-  if (!state.voiceEnabled) return;
-  audioQueue.push(text);
-  if (!isSpeaking) processQueue();
-}
-
-async function processQueue() {
-  if (audioQueue.length === 0) {
-    isSpeaking = false;
-    setVoiceDot(state.listening ? 'listening' : 'idle');
-    startListening();
-    return;
-  }
-  isSpeaking = true;
-  const text = audioQueue.shift();
-  setVoiceDot('speaking');
-  document.getElementById('voice-text').textContent = '🔊 ' + text.substring(0, 60) + (text.length > 60 ? '…' : '');
-
-  try {
-    const resp = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
-    });
-    if (!resp.ok) throw new Error('API error ' + resp.status);
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.onended = () => { URL.revokeObjectURL(url); processQueue(); };
-    audio.onerror = () => { processQueue(); };
-    await audio.play();
-  } catch(e) {
-    console.warn('TTS fallback:', e);
-    // fallback browser TTS
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'it-IT'; u.rate = 1.05;
-      u.onend = () => processQueue();
-      u.onerror = () => processQueue();
-      window.speechSynthesis.speak(u);
-    } else { processQueue(); }
-  }
-}
-
-function speakCurrentExercise() {
-  if (!state.sessionActive) return;
-  const { ex } = allExercises[state.exerciseIdx];
-  const txt = `${ex.name}. ${ex.sets} serie da ${ex.reps}. ${ex.detail}`;
-  speak(txt);
-}
-
-function speakRest(secs, nextSet, totalSets) {
-  speak(`Recupero di ${secs} secondi. Poi serie ${nextSet} di ${totalSets}.`);
-}
-
-function toggleVoice() {
-  state.voiceEnabled = !state.voiceEnabled;
-  const btn = document.getElementById('voice-toggle-btn');
-  btn.textContent = state.voiceEnabled ? '🎙 Voce ON' : '🔇 Voce OFF';
-  btn.className = 'voice-toggle' + (state.voiceEnabled ? ' on' : '');
-  if (!state.voiceEnabled) { audioQueue = []; isSpeaking = false; stopListening(); }
-}
-
-function setVoiceDot(mode) {
-  const dot = document.getElementById('voice-dot');
-  dot.className = 'voice-dot' + (mode === 'listening' ? ' listening' : mode === 'speaking' ? ' speaking' : '');
-}
-
-// ═══════════════════════════════════════════════════════
-// VOICE RECOGNITION
-// ═══════════════════════════════════════════════════════
-
-function initVoice() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    document.getElementById('voice-text').textContent = 'Riconoscimento vocale non supportato su questo browser';
-    return;
-  }
-  recognition = new SR();
-  recognition.lang = 'it-IT';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  recognition.onresult = (e) => {
-    const t = e.results[0][0].transcript.toLowerCase().trim();
-    document.getElementById('voice-text').textContent = '🎙 Sentito: "' + t + '"';
-    if (t.includes('fatto') || t.includes('avanti') || t.includes('prossimo') || t.includes('next') || t.includes('ok')) {
-      nextStep();
-    } else if (t.includes('salta') || t.includes('skip')) {
-      skipExercise();
-    } else if (t.includes('ripeti') || t.includes('ancora')) {
-      speakCurrentExercise();
-    }
-    setTimeout(startListening, 500);
-  };
-
-  recognition.onerror = (e) => {
-    if (e.error !== 'no-speech' && e.error !== 'aborted') {
-      document.getElementById('voice-text').textContent = 'Errore mic: ' + e.error;
-    }
-    setTimeout(() => { if (state.sessionActive && state.voiceEnabled) startListening(); }, 1000);
-  };
-
-  recognition.onend = () => {
-    setVoiceDot('idle');
-    state.listening = false;
-    if (state.sessionActive && state.voiceEnabled) setTimeout(startListening, 300);
-  };
-
-  startListening();
-}
-
-function startListening() {
-  if (!recognition || !state.voiceEnabled || state.listening) return;
-  try {
-    recognition.start();
-    state.listening = true;
-    setVoiceDot('listening');
-    document.getElementById('voice-text').textContent = '🎙 In ascolto… di\' "fatto" per avanzare';
-  } catch(e) {}
-}
-
-function stopListening() {
-  if (recognition) { try { recognition.stop(); } catch(e) {} }
-  state.listening = false;
-  setVoiceDot('idle');
-}
+function speak(text) { /* voce disabilitata */ }
+function speakCurrentExercise() {}
+function speakRest(secs, nextSet, totalSets) {}
+function initVoice() {}
+function stopListening() {}
 
 // ═══════════════════════════════════════════════════════
 // INIT
